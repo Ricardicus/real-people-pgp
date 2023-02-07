@@ -9,4 +9,6 @@ I am building a library, a client and a server that uses ECC cryptography to est
 chain of trust among humans who want to be able to exclude bots from commenting
 or posting on a public forum.
 
+# A work in progress
 
+Lots of things to do. 
