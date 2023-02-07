@@ -1,0 +1,45 @@
+[package]
+name = "grpc-demo-grpc"
+version = "0.1.0"
+authors = ["anshul <anshulgoel151999@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name="server"
+path="./src/server.rs"
+
+[[bin]]
+name="client"
+path="./src/client.rs"
+
+[[bin]]
+name="keygen"
+path="./src/keygen.rs"
+
+[[bin]]
+name="keyinspect"
+path="./src/keyinspect.rs"
+
+[dependencies]
+protobuf        = "2"
+httpbis         = { git = "https://github.com/stepancheg/rust-http2" }
+grpc ="*"
+grpc-protobuf="*"
+tokio = { version = "1.12.0", features = ["full"] } # for our async runtime    
+rand = "0.6"
+bitcoin_hashes = "0.10.0"
+rust-crypto = "0.2"
+sha2 = "0.9.8"
+rmp-serde = "1.1.1"
+serde = "1.0.152"
+serde_derive = "1.0.152"
+clap = { version = "4.0", features = ["derive"] }
+chrono = "0.4.23"
+getopts = "0.2"
+
+[dependencies.secp256k1]
+features = ["rand", "bitcoin_hashes"]
+version = "0.20.0"
+
+[build-dependencies]
+protoc-rust-grpc = "0.8.2"

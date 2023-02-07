@@ -1,0 +1,10 @@
+# PoHpy lib
+pohpylib/target
+pohpylib/venv
+
+# Application
+app/target
+
+# Python dev
+venv
+
