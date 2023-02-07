@@ -20,6 +20,10 @@ path="./src/keygen.rs"
 name="keyinspect"
 path="./src/keyinspect.rs"
 
+[[bin]]
+name="rootcert"
+path="./src/rootcert.rs"
+
 [dependencies]
 protobuf        = "2"
 httpbis         = { git = "https://github.com/stepancheg/rust-http2" }
@@ -36,6 +40,8 @@ serde_derive = "1.0.152"
 clap = { version = "4.0", features = ["derive"] }
 chrono = "0.4.23"
 getopts = "0.2"
+rpassword = "0.0.4"
+
 
 [dependencies.secp256k1]
 features = ["rand", "bitcoin_hashes"]

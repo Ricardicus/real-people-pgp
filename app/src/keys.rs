@@ -12,6 +12,7 @@ use sha2::{Digest, Sha256};
 
 use rmp_serde::Serializer;
 use serde::Serialize;
+use std::path::Path;
 use std::str::FromStr;
 
 use crypto::buffer::ReadBuffer;
@@ -33,6 +34,17 @@ pub struct KeyMaster {
 pub struct KeyPair {
     pub public_key: String,
     pub secret_key: String,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct RootCert {
+    pub public_key: String,
+    pub era: u32,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct RootCerts {
+    pub certs: Vec<RootCert>,
 }
 
 /* Keymaster holds the keys */
@@ -196,6 +208,43 @@ impl KeyMaster {
 
         self.holding_these(&secret_key, &public_key);
         return format!("Wallet imported from file: {file}");
+    }
+}
+
+impl RootCerts {
+    pub fn from_file(file: &str) -> RootCerts {
+        let mut filecheck = File::open(file).expect("failed to open file");
+        let mut data: Vec<u8> = Vec::<u8>::new();
+        filecheck
+            .read_to_end(&mut data)
+            .expect("Failed to read data");
+
+        return rmp_serde::from_slice(&data).unwrap();
+    }
+
+    pub fn print(&self) {
+        for cert in &self.certs {
+            println!("{} ({})", cert.public_key, cert.era);
+        }
+    }
+
+    pub fn add_pub_key(&mut self, pub_key: &str, era: u32) {
+        let rc: RootCert = RootCert {
+            public_key: pub_key.to_string(),
+            era: era,
+        };
+        self.certs.push(rc);
+    }
+
+    pub fn to_file(&self, file: &str) {
+        let mut buf = Vec::new();
+
+        self.serialize(&mut Serializer::new(&mut buf)).unwrap();
+
+        let mut f = File::create(file).expect(&format!("Failed to open file: {}", file)[..]);
+
+        /* Writing to file */
+        f.write(&buf[..]).expect("Failed to write bytes");
     }
 }
 
