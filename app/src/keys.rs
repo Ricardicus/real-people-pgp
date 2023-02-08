@@ -236,6 +236,20 @@ impl RootCerts {
         self.certs.push(rc);
     }
 
+    pub fn get_filename() -> String {
+        return "pog_rootcert.pohrc".to_string();
+    }
+
+    pub fn read_rootcert(&self) -> RootCerts {
+        let root_cert_name = RootCerts::get_filename();
+        let rs: bool = Path::new(&root_cert_name).exists();
+        // Check that file 'name' exists
+        if !rs {
+            panic!("There is not rootcert file");
+        }
+        return RootCerts::from_file(&root_cert_name);
+    }
+
     pub fn to_file(&self, file: &str) {
         let mut buf = Vec::new();
 
