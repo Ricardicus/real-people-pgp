@@ -17,6 +17,10 @@ name="keygen"
 path="./src/keygen.rs"
 
 [[bin]]
+name="certgen"
+path="./src/certgen.rs"
+
+[[bin]]
 name="keyinspect"
 path="./src/keyinspect.rs"
 

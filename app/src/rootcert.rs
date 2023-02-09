@@ -6,19 +6,12 @@ extern crate serde;
 extern crate serde_derive;
 extern crate rmp_serde as rmps;
 
-use chrono;
 extern crate rpassword;
 use rpassword::read_password;
-use std::collections::HashMap;
 mod keys;
 use clap::Parser;
-use crypto::buffer::ReadBuffer;
-use crypto::buffer::{BufferResult, RefReadBuffer, RefWriteBuffer, WriteBuffer};
-use crypto::rc4::Rc4;
-use crypto::symmetriccipher::{Decryptor, Encryptor};
-use keys::{KeyMaster, KeyPair, RootCert, RootCerts};
-use std::fs::File;
-use std::io::{Read, Write};
+use keys::{KeyPair, RootCert, RootCerts};
+use std::io::Write;
 use std::path::Path;
 
 extern crate getopts;
@@ -41,7 +34,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let mut opts = Options::new();
 
-    let root_cert_name = "poh_rootcert.pohrc";
+    let root_cert_name = RootCerts::get_filename();
 
     opts.optopt(
         "i",
@@ -60,11 +53,11 @@ fn main() {
         }
     };
 
-    let rs: bool = Path::new(root_cert_name).exists();
+    let rs: bool = Path::new(&root_cert_name).exists();
 
     if matches.opt_present("p") {
         if rs {
-            let rc: RootCerts = RootCerts::from_file(root_cert_name);
+            let rc: RootCerts = RootCerts::from_file(&root_cert_name);
             rc.print();
             return;
         } else {
@@ -97,9 +90,11 @@ fn main() {
     };
 
     if rs == true {
-        rc = RootCerts::from_file(root_cert_name);
+        rc = RootCerts::from_file(&root_cert_name);
     }
 
     rc.add_pub_key(key_pair.public_key.as_str(), era);
-    rc.to_file(root_cert_name);
+    rc.to_file(&root_cert_name);
+
+    println!("Root cert: {root_cert_name}");
 }
