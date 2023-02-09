@@ -3,13 +3,12 @@ import pohlib
 def print_keys(k):
     print("Secret key: {}".format(k.secret_key))
     print("Public key: {}".format(k.public_key))
-    print("Name: {}".format(k.name))
     print("Pass: {}".format(k.passphrase))
 
 def keys_hash(k):
-    return pohlib.hash_string(k.secret_key + k.public_key + k.name + k.passphrase)
+    return pohlib.hash_string(k.secret_key + k.public_key + k.passphrase)
 
-k = pohlib.KeyMaster("My keys", "My password")
+k = pohlib.KeyMaster("My passphrase")
 print_keys(k)
 
 public_key = k.public_key
@@ -29,7 +28,7 @@ print("Valid: {}".format(k.verify_with_public_key(public_key, new_cert[0], new_c
 k.export_to_file("test-file")
 
 k2 = pohlib.KeyMaster()
-k2.import_from_file("test-file", "My password")
+k2.import_from_file("test-file", "My passphrase")
 print_keys(k2)
 print(keys_hash(k2))
 

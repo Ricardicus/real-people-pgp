@@ -6,19 +6,12 @@ extern crate serde;
 extern crate serde_derive;
 extern crate rmp_serde as rmps;
 
-use chrono;
 extern crate rpassword;
 use rpassword::read_password;
-use std::collections::HashMap;
 mod keys;
 use clap::Parser;
-use crypto::buffer::ReadBuffer;
-use crypto::buffer::{BufferResult, RefReadBuffer, RefWriteBuffer, WriteBuffer};
-use crypto::rc4::Rc4;
-use crypto::symmetriccipher::{Decryptor, Encryptor};
-use keys::{KeyMaster, KeyPair, RootCert, RootCerts};
-use std::fs::File;
-use std::io::{Read, Write};
+use keys::{KeyPair, RootCert, RootCerts};
+use std::io::Write;
 use std::path::Path;
 
 extern crate getopts;
@@ -41,7 +34,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let mut opts = Options::new();
 
-    let root_cert_name = RootCerts::get_filename(); 
+    let root_cert_name = RootCerts::get_filename();
 
     opts.optopt(
         "i",

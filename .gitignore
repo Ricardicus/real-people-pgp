@@ -8,3 +8,5 @@ app/target
 # Python dev
 venv
 
+# Generated file from example script
+pohpylib/examples/test-file

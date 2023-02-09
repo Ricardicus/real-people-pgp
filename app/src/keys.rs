@@ -19,14 +19,13 @@ use crypto::buffer::ReadBuffer;
 use crypto::buffer::{BufferResult, RefReadBuffer, RefWriteBuffer, WriteBuffer};
 use crypto::rc4::Rc4;
 use crypto::symmetriccipher::{Decryptor, Encryptor};
-use std::fs::File;
+use std::fs::{create_dir_all, File};
 use std::io::{Read, Write};
 
 pub struct KeyMaster {
     pub secp: Secp256k1<All>,
     pub public_key: String,
     pub secret_key: String,
-    pub name: String,
     pub passphrase: String,
 }
 
@@ -34,6 +33,12 @@ pub struct KeyMaster {
 pub struct KeyPair {
     pub public_key: String,
     pub secret_key: String,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct Cert {
+    pub public_key: String,
+    pub signature: String,
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -49,7 +54,7 @@ pub struct RootCerts {
 
 /* Keymaster holds the keys */
 impl KeyMaster {
-    pub fn new(name: Option<&str>, passphrase: Option<&str>) -> Self {
+    pub fn new(passphrase: Option<&str>) -> Self {
         let secp = Secp256k1::new();
         let mut rng = OsRng::new().expect("OsRng");
         let secret_key = SecretKey::new(&mut rng);
@@ -58,7 +63,6 @@ impl KeyMaster {
             secp: secp,
             secret_key: secret_key.to_string(),
             public_key: public_key.to_string(),
-            name: name.unwrap_or("Default name").to_string(),
             passphrase: passphrase.unwrap_or("Default passphrase").to_string(),
         }
     }
@@ -128,86 +132,22 @@ impl KeyMaster {
 
     /* Store keys to file */
     pub fn export_to_file(&self, file: &str) -> String {
-        let mut f = File::create(file).expect(&format!("Failed to open file: {}", file)[..]);
+        let key_pair: KeyPair = KeyPair {
+            secret_key: self.secret_key.to_string(),
+            public_key: self.public_key.to_string(),
+        };
 
-        let v = vec![
-            format!("{:width$}", &self.public_key.clone(), width = 66),
-            format!("{:width$}", &self.secret_key.clone(), width = 64),
-            format!("{}", &self.name.clone()),
-        ];
-        let export_content: String = v.concat();
-
-        let mut out_bytes: &mut [u8] = &mut [0; 1024];
-        let rc4_key: &[u8] = self.passphrase.as_bytes();
-        let mut rc4_crypto: Rc4 = Rc4::new(&rc4_key);
-        let mut incoming_buf: RefReadBuffer = RefReadBuffer::new(&export_content.as_bytes());
-        let mut out_buf: RefWriteBuffer = RefWriteBuffer::new(&mut out_bytes);
-
-        let mut final_result = Vec::<u8>::new();
-        loop {
-            let result = rc4_crypto
-                .encrypt(&mut incoming_buf, &mut out_buf, true)
-                .unwrap();
-            final_result.extend(
-                out_buf
-                    .take_read_buffer()
-                    .take_remaining()
-                    .iter()
-                    .map(|&i| i),
-            );
-            match result {
-                BufferResult::BufferUnderflow => break,
-                BufferResult::BufferOverflow => {}
-            }
-        }
-
-        /* Writing to file */
-        f.write(&final_result[..]).expect("Failed to write bytes");
+        key_pair.to_file(file, &self.passphrase);
         return format!("Keys exported to file: {file}");
     }
 
     pub fn import_from_file(&mut self, file: &str, passphrase: &str) -> String {
-        let mut out_bytes: &mut [u8] = &mut [0; 1024];
-        let rc4_key: &[u8] = passphrase.as_bytes();
-        let mut rc4_crypto: Rc4 = Rc4::new(&rc4_key);
-        let mut out_buf: RefWriteBuffer = RefWriteBuffer::new(&mut out_bytes);
-        let mut filecheck = File::open(file).expect("failed to open file");
-        let mut data: Vec<u8> = Vec::<u8>::new();
-        filecheck
-            .read_to_end(&mut data)
-            .expect("Failed to read data");
+        let key_pair: KeyPair = KeyPair::from_file(file, passphrase);
 
-        let mut final_result = Vec::<u8>::new();
-        let mut incoming_buf: RefReadBuffer = RefReadBuffer::new(&data[..]);
-
-        loop {
-            let result = rc4_crypto
-                .decrypt(&mut incoming_buf, &mut out_buf, true)
-                .unwrap();
-            final_result.extend(
-                out_buf
-                    .take_read_buffer()
-                    .take_remaining()
-                    .iter()
-                    .map(|&i| i),
-            );
-            match result {
-                BufferResult::BufferUnderflow => break,
-                BufferResult::BufferOverflow => {}
-            }
-        }
-
-        let contents = std::str::from_utf8(&final_result[..]).unwrap();
-        let content_itr = || contents.chars().into_iter();
-        assert!(contents.len() >= 66 + 64 + 1);
-
-        let public_key: String = content_itr().take(66).collect();
-        let secret_key: String = content_itr().skip(66).take(64).collect();
-        self.name = content_itr().skip(66 + 64).collect();
         self.passphrase = passphrase.to_string();
 
-        self.holding_these(&secret_key, &public_key);
-        return format!("Wallet imported from file: {file}");
+        self.holding_these(&key_pair.secret_key, &key_pair.public_key);
+        return format!("Keys imported from file: {file}");
     }
 }
 
@@ -237,7 +177,7 @@ impl RootCerts {
     }
 
     pub fn get_filename() -> String {
-        return "pog_rootcert.pohrc".to_string();
+        return "poh_rootcert.pohrc".to_string();
     }
 
     pub fn read_rootcert(&self) -> RootCerts {
@@ -330,6 +270,43 @@ impl KeyPair {
         }
 
         return rmp_serde::from_slice(&final_result).unwrap();
+    }
+}
+
+impl Cert {
+    pub fn new(keys: KeyMaster, passphrase: &str, out_dir: &str) -> Self {
+        let cert_keys = KeyMaster::new(Some(passphrase));
+
+        create_dir_all(out_dir).expect("Failed to create directory {out_dir}");
+
+        let keys_filename = "keys.poh";
+        let keys_path = format!("{}/{}", out_dir, keys_filename);
+
+        cert_keys.export_to_file(&keys_path);
+
+        let signature: String = keys.sign(cert_keys.public_key.to_string());
+
+        let new_cert = Cert {
+            public_key: cert_keys.public_key,
+            signature: signature,
+        };
+
+        new_cert.store(out_dir);
+        return new_cert;
+    }
+
+    pub fn store(&self, out_dir: &str) {
+        let mut buf = Vec::new();
+        let filename = "cert.pohcert";
+        let filepath = format!("{}/{}", out_dir, filename);
+
+        self.serialize(&mut Serializer::new(&mut buf)).unwrap();
+        let mut f = File::create(filepath.to_string())
+            .expect(&format!("Failed to create file: {}", filepath)[..]);
+
+        /* Writing to file */
+        f.write(&buf[..]).expect("Failed to write bytes");
+        println!("Stored new certificate file {filepath}");
     }
 }
 

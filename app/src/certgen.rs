@@ -4,39 +4,37 @@ extern crate serde;
 extern crate serde_derive;
 extern crate rmp_serde as rmps;
 use clap::Parser;
-use crypto::buffer::ReadBuffer;
-use crypto::buffer::{BufferResult, RefReadBuffer, RefWriteBuffer, WriteBuffer};
-use crypto::rc4::Rc4;
-use crypto::symmetriccipher::Encryptor;
-use rmps::Serializer;
-use serde::Serialize;
-use std::fs::File;
-use std::io::Write;
-
+extern crate rpassword;
+use rpassword::read_password;
 mod keys;
-use keys::{KeyMaster, KeyPair};
+use keys::{Cert, KeyMaster};
+use std::io::{self, BufRead, Write};
 
 #[derive(Parser)]
 struct Cli {
-    /// Input master key pair 
-    input: String,
-    passphrase: String,
-    /// The path to the file to store
-    output: String,
+    /// Input master key pair
+    ca_keys: String,
 }
 
 fn main() {
     let args = Cli::parse();
 
-    let key_pair: KeyPair = KeyPair::from_file(args.input, args.passphrase);
-    print!("Enter passphrase for {keys_file}: ");
+    print!("Enter CA passphrase: ");
     std::io::stdout().flush().unwrap();
-    let keys = KeyMaster::new(
-        Some(format!("A pair of keys generated {} for certificate", chrono::offset::Local::now()).as_str()),
-        Some(args.passphrase_out.as_str()),
-    );
+    let ca_passphrase = read_password().unwrap();
 
-    let new_key_pair: KeyPair = KeyPair::
-    key_pair.to_file(args.path.as_str(), args.passphrase.as_str());
-    println!("{}", format!("Keys exported to file: {}", args.path));
+    print!("Enter name for the new human client: ");
+    std::io::stdout().flush().unwrap();
+    let mut name = String::new();
+    let stdin = io::stdin();
+    stdin.lock().read_line(&mut name).unwrap();
+
+    name = name.replace(" ", "_");
+    print!("Enter passphrase for the new human client: ");
+    std::io::stdout().flush().unwrap();
+    let passphrase = read_password().unwrap();
+    let mut keys = KeyMaster::new(None);
+    keys.import_from_file(&args.ca_keys, &ca_passphrase);
+
+    Cert::new(keys, &passphrase, &name);
 }
