@@ -30,11 +30,12 @@ fn main() {
     stdin.lock().read_line(&mut name).unwrap();
 
     name = name.replace(" ", "_");
+    name = name.replace("\n", "");
+    println!("name: '{}'", name);
     print!("Enter passphrase for the new human client: ");
     std::io::stdout().flush().unwrap();
     let passphrase = read_password().unwrap();
-    let mut keys = KeyMaster::new(None);
-    keys.import_from_file(&args.ca_keys, &ca_passphrase);
+    let mut keys = KeyMaster::import_from_file(&args.ca_keys, &ca_passphrase);
 
     Cert::new(keys, &passphrase, &name);
 }

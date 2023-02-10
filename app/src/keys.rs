@@ -141,13 +141,14 @@ impl KeyMaster {
         return format!("Keys exported to file: {file}");
     }
 
-    pub fn import_from_file(&mut self, file: &str, passphrase: &str) -> String {
+    pub fn import_from_file(file: &str, passphrase: &str) -> KeyMaster {
         let key_pair: KeyPair = KeyPair::from_file(file, passphrase);
 
-        self.passphrase = passphrase.to_string();
+        let mut km: KeyMaster = KeyMaster::new(None);
+        km.passphrase = passphrase.to_string();
 
-        self.holding_these(&key_pair.secret_key, &key_pair.public_key);
-        return format!("Keys imported from file: {file}");
+        km.holding_these(&key_pair.secret_key, &key_pair.public_key);
+        return km;
     }
 }
 
@@ -180,7 +181,7 @@ impl RootCerts {
         return "poh_rootcert.pohrc".to_string();
     }
 
-    pub fn read_rootcert(&self) -> RootCerts {
+    pub fn read_rootcert() -> RootCerts {
         let root_cert_name = RootCerts::get_filename();
         let rs: bool = Path::new(&root_cert_name).exists();
         // Check that file 'name' exists
@@ -282,6 +283,7 @@ impl Cert {
         let keys_filename = "keys.poh";
         let keys_path = format!("{}/{}", out_dir, keys_filename);
 
+        println!("keys_path: {}", keys_path);
         cert_keys.export_to_file(&keys_path);
 
         let signature: String = keys.sign(cert_keys.public_key.to_string());
@@ -307,6 +309,15 @@ impl Cert {
         /* Writing to file */
         f.write(&buf[..]).expect("Failed to write bytes");
         println!("Stored new certificate file {filepath}");
+    }
+    pub fn from_file(file: &str) -> Cert {
+        let mut filecheck = File::open(file).expect("failed to open file");
+        let mut data: Vec<u8> = Vec::<u8>::new();
+        filecheck
+            .read_to_end(&mut data)
+            .expect("Failed to read data");
+
+        return rmp_serde::from_slice(&data).unwrap();
     }
 }
 

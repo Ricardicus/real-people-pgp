@@ -12,7 +12,7 @@ syntax = "proto3";
 
  // argument
  message CheckRequest {
-   string pub = 1;
+   string pub_hash = 1;
    string cert = 2;
    string msg = 3;
    string sig = 4;
