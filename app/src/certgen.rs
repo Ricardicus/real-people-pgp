@@ -35,7 +35,7 @@ fn main() {
     print!("Enter passphrase for the new human client: ");
     std::io::stdout().flush().unwrap();
     let passphrase = read_password().unwrap();
-    let mut keys = KeyMaster::import_from_file(&args.ca_keys, &ca_passphrase);
+    let keys = KeyMaster::import_from_file(&args.ca_keys, &ca_passphrase);
 
-    Cert::new(keys, &passphrase, &name);
+    Cert::generate(keys, &passphrase, &name);
 }

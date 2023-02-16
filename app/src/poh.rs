@@ -26,10 +26,10 @@
 #[derive(PartialEq,Clone,Default)]
 pub struct CheckRequest {
     // message fields
-    pub pub_hash: ::std::string::String,
+    pub pub_key: ::std::string::String,
     pub cert: ::std::string::String,
     pub msg: ::std::string::String,
-    pub sig: ::std::string::String,
+    pub msg_sig: ::std::string::String,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -46,30 +46,30 @@ impl CheckRequest {
         ::std::default::Default::default()
     }
 
-    // string pub_hash = 1;
+    // string pub_key = 1;
 
 
-    pub fn get_pub_hash(&self) -> &str {
-        &self.pub_hash
+    pub fn get_pub_key(&self) -> &str {
+        &self.pub_key
     }
-    pub fn clear_pub_hash(&mut self) {
-        self.pub_hash.clear();
+    pub fn clear_pub_key(&mut self) {
+        self.pub_key.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_pub_hash(&mut self, v: ::std::string::String) {
-        self.pub_hash = v;
+    pub fn set_pub_key(&mut self, v: ::std::string::String) {
+        self.pub_key = v;
     }
 
     // Mutable pointer to the field.
     // If field is not initialized, it is initialized with default value first.
-    pub fn mut_pub_hash(&mut self) -> &mut ::std::string::String {
-        &mut self.pub_hash
+    pub fn mut_pub_key(&mut self) -> &mut ::std::string::String {
+        &mut self.pub_key
     }
 
     // Take field
-    pub fn take_pub_hash(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.pub_hash, ::std::string::String::new())
+    pub fn take_pub_key(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.pub_key, ::std::string::String::new())
     }
 
     // string cert = 2;
@@ -124,30 +124,30 @@ impl CheckRequest {
         ::std::mem::replace(&mut self.msg, ::std::string::String::new())
     }
 
-    // string sig = 4;
+    // string msg_sig = 4;
 
 
-    pub fn get_sig(&self) -> &str {
-        &self.sig
+    pub fn get_msg_sig(&self) -> &str {
+        &self.msg_sig
     }
-    pub fn clear_sig(&mut self) {
-        self.sig.clear();
+    pub fn clear_msg_sig(&mut self) {
+        self.msg_sig.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_sig(&mut self, v: ::std::string::String) {
-        self.sig = v;
+    pub fn set_msg_sig(&mut self, v: ::std::string::String) {
+        self.msg_sig = v;
     }
 
     // Mutable pointer to the field.
     // If field is not initialized, it is initialized with default value first.
-    pub fn mut_sig(&mut self) -> &mut ::std::string::String {
-        &mut self.sig
+    pub fn mut_msg_sig(&mut self) -> &mut ::std::string::String {
+        &mut self.msg_sig
     }
 
     // Take field
-    pub fn take_sig(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.sig, ::std::string::String::new())
+    pub fn take_msg_sig(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.msg_sig, ::std::string::String::new())
     }
 }
 
@@ -161,7 +161,7 @@ impl ::protobuf::Message for CheckRequest {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.pub_hash)?;
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.pub_key)?;
                 },
                 2 => {
                     ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.cert)?;
@@ -170,7 +170,7 @@ impl ::protobuf::Message for CheckRequest {
                     ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.msg)?;
                 },
                 4 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.sig)?;
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.msg_sig)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -184,8 +184,8 @@ impl ::protobuf::Message for CheckRequest {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if !self.pub_hash.is_empty() {
-            my_size += ::protobuf::rt::string_size(1, &self.pub_hash);
+        if !self.pub_key.is_empty() {
+            my_size += ::protobuf::rt::string_size(1, &self.pub_key);
         }
         if !self.cert.is_empty() {
             my_size += ::protobuf::rt::string_size(2, &self.cert);
@@ -193,8 +193,8 @@ impl ::protobuf::Message for CheckRequest {
         if !self.msg.is_empty() {
             my_size += ::protobuf::rt::string_size(3, &self.msg);
         }
-        if !self.sig.is_empty() {
-            my_size += ::protobuf::rt::string_size(4, &self.sig);
+        if !self.msg_sig.is_empty() {
+            my_size += ::protobuf::rt::string_size(4, &self.msg_sig);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -202,8 +202,8 @@ impl ::protobuf::Message for CheckRequest {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
-        if !self.pub_hash.is_empty() {
-            os.write_string(1, &self.pub_hash)?;
+        if !self.pub_key.is_empty() {
+            os.write_string(1, &self.pub_key)?;
         }
         if !self.cert.is_empty() {
             os.write_string(2, &self.cert)?;
@@ -211,8 +211,8 @@ impl ::protobuf::Message for CheckRequest {
         if !self.msg.is_empty() {
             os.write_string(3, &self.msg)?;
         }
-        if !self.sig.is_empty() {
-            os.write_string(4, &self.sig)?;
+        if !self.msg_sig.is_empty() {
+            os.write_string(4, &self.msg_sig)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -253,9 +253,9 @@ impl ::protobuf::Message for CheckRequest {
         descriptor.get(|| {
             let mut fields = ::std::vec::Vec::new();
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                "pub_hash",
-                |m: &CheckRequest| { &m.pub_hash },
-                |m: &mut CheckRequest| { &mut m.pub_hash },
+                "pub_key",
+                |m: &CheckRequest| { &m.pub_key },
+                |m: &mut CheckRequest| { &mut m.pub_key },
             ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
                 "cert",
@@ -268,9 +268,9 @@ impl ::protobuf::Message for CheckRequest {
                 |m: &mut CheckRequest| { &mut m.msg },
             ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                "sig",
-                |m: &CheckRequest| { &m.sig },
-                |m: &mut CheckRequest| { &mut m.sig },
+                "msg_sig",
+                |m: &CheckRequest| { &m.msg_sig },
+                |m: &mut CheckRequest| { &mut m.msg_sig },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<CheckRequest>(
                 "CheckRequest",
@@ -288,10 +288,10 @@ impl ::protobuf::Message for CheckRequest {
 
 impl ::protobuf::Clear for CheckRequest {
     fn clear(&mut self) {
-        self.pub_hash.clear();
+        self.pub_key.clear();
         self.cert.clear();
         self.msg.clear();
-        self.sig.clear();
+        self.msg_sig.clear();
         self.unknown_fields.clear();
     }
 }
@@ -863,16 +863,16 @@ impl ::protobuf::reflect::ProtobufValue for PoHRootCertificate {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x0fproto/poh.proto\x12\x03poh\"a\n\x0cCheckRequest\x12\x19\n\x08pub_h\
-    ash\x18\x01\x20\x01(\tR\x07pubHash\x12\x12\n\x04cert\x18\x02\x20\x01(\tR\
-    \x04cert\x12\x10\n\x03msg\x18\x03\x20\x01(\tR\x03msg\x12\x10\n\x03sig\
-    \x18\x04\x20\x01(\tR\x03sig\"7\n\rCheckResponse\x12\x10\n\x03msg\x18\x01\
-    \x20\x01(\tR\x03msg\x12\x14\n\x05valid\x18\x02\x20\x01(\x08R\x05valid\">\
-    \n\x13PoHRootCertificates\x12'\n\x02rc\x18\x01\x20\x03(\x0b2\x17.poh.PoH\
-    RootCertificateR\x02rc\"J\n\x12PoHRootCertificate\x12\x1d\n\npublic_key\
-    \x18\x01\x20\x01(\tR\tpublicKey\x12\x15\n\x06era_id\x18\x02\x20\x01(\x05\
-    R\x05eraId25\n\x03PoH\x12.\n\x05Check\x12\x11.poh.CheckRequest\x1a\x12.p\
-    oh.CheckResponseb\x06proto3\
+    \n\x0fproto/poh.proto\x12\x03poh\"f\n\x0cCheckRequest\x12\x17\n\x07pub_k\
+    ey\x18\x01\x20\x01(\tR\x06pubKey\x12\x12\n\x04cert\x18\x02\x20\x01(\tR\
+    \x04cert\x12\x10\n\x03msg\x18\x03\x20\x01(\tR\x03msg\x12\x17\n\x07msg_si\
+    g\x18\x04\x20\x01(\tR\x06msgSig\"7\n\rCheckResponse\x12\x10\n\x03msg\x18\
+    \x01\x20\x01(\tR\x03msg\x12\x14\n\x05valid\x18\x02\x20\x01(\x08R\x05vali\
+    d\">\n\x13PoHRootCertificates\x12'\n\x02rc\x18\x01\x20\x03(\x0b2\x17.poh\
+    .PoHRootCertificateR\x02rc\"J\n\x12PoHRootCertificate\x12\x1d\n\npublic_\
+    key\x18\x01\x20\x01(\tR\tpublicKey\x12\x15\n\x06era_id\x18\x02\x20\x01(\
+    \x05R\x05eraId25\n\x03PoH\x12.\n\x05Check\x12\x11.poh.CheckRequest\x1a\
+    \x12.poh.CheckResponseb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

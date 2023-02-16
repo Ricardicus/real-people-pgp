@@ -44,7 +44,7 @@ pub struct Cert {
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct RootCert {
     pub public_key: String,
-    pub era: u32,
+    pub era: u64,
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -103,19 +103,14 @@ impl KeyMaster {
     }
 
     /* Verify a message using another public key */
-    pub fn verify_with_public_key(
-        &self,
-        public_key: String,
-        message: String,
-        signature: String,
-    ) -> bool {
+    pub fn verify_with_public_key(&self, public_key: &str, message: &str, signature: &str) -> bool {
         let message_ = Message::from_hashed_data::<sha256::Hash>(message.as_bytes());
         return self
             .secp
             .verify(
                 &message_,
-                &Signature::from_str(&signature[..]).unwrap(),
-                &PublicKey::from_str(&public_key[..]).unwrap(),
+                &Signature::from_str(signature).unwrap(),
+                &PublicKey::from_str(public_key).unwrap(),
             )
             .is_ok();
     }
@@ -169,7 +164,7 @@ impl RootCerts {
         }
     }
 
-    pub fn add_pub_key(&mut self, pub_key: &str, era: u32) {
+    pub fn add_pub_key(&mut self, pub_key: &str, era: u64) {
         let rc: RootCert = RootCert {
             public_key: pub_key.to_string(),
             era: era,
@@ -275,8 +270,9 @@ impl KeyPair {
 }
 
 impl Cert {
-    pub fn new(keys: KeyMaster, passphrase: &str, out_dir: &str) -> Self {
+    pub fn generate(keys: KeyMaster, passphrase: &str, out_dir: &str) -> Self {
         let cert_keys = KeyMaster::new(Some(passphrase));
+        let signature: String = keys.sign(cert_keys.public_key.to_string());
 
         create_dir_all(out_dir).expect("Failed to create directory {out_dir}");
 
@@ -285,8 +281,6 @@ impl Cert {
 
         println!("keys_path: {}", keys_path);
         cert_keys.export_to_file(&keys_path);
-
-        let signature: String = keys.sign(cert_keys.public_key.to_string());
 
         let new_cert = Cert {
             public_key: cert_keys.public_key,

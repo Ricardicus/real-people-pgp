@@ -76,7 +76,7 @@ fn main() {
         print_usage(&args[0], opts);
         return;
     }
-    let era: u32 = matches.opt_str("e").unwrap().parse::<u32>().unwrap();
+    let era: u64 = matches.opt_str("e").unwrap().parse::<u64>().unwrap();
     let keys_file: String = matches.opt_str("i").unwrap();
 
     print!("Enter passphrase for {keys_file}: ");
