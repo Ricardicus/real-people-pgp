@@ -22,7 +22,7 @@
 // server interface
 
 pub trait PoH {
-    fn check(&self, o: ::grpc::ServerHandlerContext, req: ::grpc::ServerRequestSingle<super::poh::CheckRequest>, resp: ::grpc::ServerResponseUnarySink<super::poh::CheckResponse>) -> ::grpc::Result<()>;
+    fn initialize(&self, o: ::grpc::ServerHandlerContext, req: ::grpc::ServerRequestSingle<super::poh::InitializeRequest>, resp: ::grpc::ServerResponseUnarySink<super::poh::InitializeResponse>) -> ::grpc::Result<()>;
 }
 
 // client
@@ -40,9 +40,9 @@ impl ::grpc::ClientStub for PoHClient {
 }
 
 impl PoHClient {
-    pub fn check(&self, o: ::grpc::RequestOptions, req: super::poh::CheckRequest) -> ::grpc::SingleResponse<super::poh::CheckResponse> {
+    pub fn initialize(&self, o: ::grpc::RequestOptions, req: super::poh::InitializeRequest) -> ::grpc::SingleResponse<super::poh::InitializeResponse> {
         let descriptor = ::grpc::rt::ArcOrStatic::Static(&::grpc::rt::MethodDescriptor {
-            name: ::grpc::rt::StringOrStatic::Static("/poh.PoH/Check"),
+            name: ::grpc::rt::StringOrStatic::Static("/poh.PoH/initialize"),
             streaming: ::grpc::rt::GrpcStreaming::Unary,
             req_marshaller: ::grpc::rt::ArcOrStatic::Static(&::grpc_protobuf::MarshallerProtobuf),
             resp_marshaller: ::grpc::rt::ArcOrStatic::Static(&::grpc_protobuf::MarshallerProtobuf),
@@ -63,14 +63,14 @@ impl PoHServer {
             vec![
                 ::grpc::rt::ServerMethod::new(
                     ::grpc::rt::ArcOrStatic::Static(&::grpc::rt::MethodDescriptor {
-                        name: ::grpc::rt::StringOrStatic::Static("/poh.PoH/Check"),
+                        name: ::grpc::rt::StringOrStatic::Static("/poh.PoH/initialize"),
                         streaming: ::grpc::rt::GrpcStreaming::Unary,
                         req_marshaller: ::grpc::rt::ArcOrStatic::Static(&::grpc_protobuf::MarshallerProtobuf),
                         resp_marshaller: ::grpc::rt::ArcOrStatic::Static(&::grpc_protobuf::MarshallerProtobuf),
                     }),
                     {
                         let handler_copy = handler_arc.clone();
-                        ::grpc::rt::MethodHandlerUnary::new(move |ctx, req, resp| (*handler_copy).check(ctx, req, resp))
+                        ::grpc::rt::MethodHandlerUnary::new(move |ctx, req, resp| (*handler_copy).initialize(ctx, req, resp))
                     },
                 ),
             ],

@@ -45,7 +45,8 @@ clap = { version = "4.0", features = ["derive"] }
 chrono = "0.4.23"
 getopts = "0.2"
 rpassword = "0.0.4"
-
+ecies = {version = "0.2", default-features = false, features = ["pure"]}
+hex = "0.4"
 
 [dependencies.secp256k1]
 features = ["rand", "bitcoin_hashes"]

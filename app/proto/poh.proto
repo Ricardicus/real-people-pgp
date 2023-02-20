@@ -7,11 +7,11 @@ syntax = "proto3";
  // service which can be executed
  service PoH {
  // function which can be called
-   rpc Check (CheckRequest) returns (CheckResponse);
+   rpc initialize (InitializeRequest) returns (InitializeResponse);
  }
 
  // argument
- message CheckRequest {
+ message InitializeRequest {
    string pub_key = 1;
    string cert = 2;
    string msg = 3;
@@ -19,9 +19,10 @@ syntax = "proto3";
  }
 
  // return value
- message CheckResponse {
+ message InitializeResponse {
    string msg = 1;
    bool valid = 2;
+   int64 session = 3;
  }
 
 message PoHRootCertificates {

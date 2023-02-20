@@ -25,8 +25,8 @@ fn main() {
 
     let keys = KeyMaster::new(Some(passphrase.as_str()));
     let key_pair: KeyPair = KeyPair {
-        public_key: keys.public_key,
-        secret_key: keys.secret_key,
+        public_key: keys.public_key.to_string(),
+        secret_key: keys.secret_key.to_string(),
     };
 
     key_pair.to_file(args.path.as_str(), passphrase.as_str());

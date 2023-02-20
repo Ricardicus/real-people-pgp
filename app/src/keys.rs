@@ -7,13 +7,13 @@ use secp256k1::bitcoin_hashes::sha256;
 use secp256k1::rand::rngs::OsRng;
 use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey, Signature};
 
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::{Deserialize};
 use sha2::{Digest, Sha256};
 
 use rmp_serde::Serializer;
 use serde::Serialize;
 use std::path::Path;
-use std::str::FromStr;
+use std::str::{FromStr, from_utf8};
 
 use crypto::buffer::ReadBuffer;
 use crypto::buffer::{BufferResult, RefReadBuffer, RefWriteBuffer, WriteBuffer};
@@ -21,6 +21,7 @@ use crypto::rc4::Rc4;
 use crypto::symmetriccipher::{Decryptor, Encryptor};
 use std::fs::{create_dir_all, File};
 use std::io::{Read, Write};
+use ecies::{decrypt, encrypt};
 
 pub struct KeyMaster {
     pub secp: Secp256k1<All>,
@@ -144,6 +145,19 @@ impl KeyMaster {
 
         km.holding_these(&key_pair.secret_key, &key_pair.public_key);
         return km;
+    }
+
+    pub fn encrypt(&self, pk: &str, msg: &str) -> String {
+        let pk_vec: &[u8] = &hex::decode(pk).unwrap();
+        let msg_vec: &[u8] = &msg.as_bytes();
+        let enc_vec: &[u8] = &encrypt(pk_vec, msg_vec).unwrap();
+        return hex::encode(enc_vec);
+    }
+    pub fn decrypt(&self, sk: &str, msg: &str) -> String {
+        let sk_vec: &[u8] = &hex::decode(sk).unwrap();
+        let msg_vec: &[u8] = &hex::decode(msg).unwrap();
+        let enc_vec: &[u8] = &decrypt(sk_vec, msg_vec).unwrap();
+        return from_utf8(enc_vec).unwrap().to_string();
     }
 }
 

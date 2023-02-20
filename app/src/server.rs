@@ -16,14 +16,14 @@ struct MyPoH {
 
 impl PoH for MyPoH {
     // rpc for service
-    fn check(
+    fn initialize(
         &self,
         _: ServerHandlerContext,
-        req: ServerRequestSingle<CheckRequest>,
-        resp: ServerResponseUnarySink<CheckResponse>,
+        req: ServerRequestSingle<InitializeRequest>,
+        resp: ServerResponseUnarySink<InitializeResponse>,
     ) -> grpc::Result<()> {
         // create Response
-        let mut r = CheckResponse::new();
+        let mut r = InitializeResponse::new();
         let msg = req.message.get_msg();
         let msg_signature = req.message.get_msg_sig();
         let cert = req.message.get_cert();
@@ -38,8 +38,11 @@ impl PoH for MyPoH {
             {
                 valid = true;
                 cert_era = rootcert.era;
-                break;
             }
+            println!("pub key: {}, cert: {}, pub_key_hash: {}", pub_key, cert, hash_string(pub_key));
+            let enc_d = self.keymaster.encrypt(pub_key, cert);
+            println!("enc_d: {}", enc_d);
+            println!("enc_d_hash: {}", hash_string(&enc_d));
         }
 
         if valid {

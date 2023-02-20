@@ -37,8 +37,8 @@ impl Client {
         }
     }
 
-    pub async fn send_msg(&self, msg: &str) -> Result<CheckResponse, Box<dyn std::error::Error>> {
-        let mut req = CheckRequest::new();
+    pub async fn send_msg(&self, msg: &str) -> Result<InitializeResponse, Box<dyn std::error::Error>> {
+        let mut req = InitializeRequest::new();
         req.set_msg(msg.to_string());
         req.set_pub_key(self.keymaster.public_key.to_string());
         req.set_cert(self.cert.signature.to_string());
@@ -46,7 +46,7 @@ impl Client {
         // send the request
         let resp = self
             .client
-            .check(grpc::RequestOptions::new(), req)
+            .initialize(grpc::RequestOptions::new(), req)
             .join_metadata_result()
             .await?;
         Ok(resp.1)
@@ -65,7 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client: Client = Client::new(host, port, &args.keys, &args.cert, passphrase.as_str());
 
-    let response: CheckResponse = client.send_msg(&args.message).await?;
+    let response: InitializeResponse = client.send_msg(&args.message).await?;
     // wait for response
     println!("{:?}: valid: {}", response.msg, response.valid);
     Ok(())
