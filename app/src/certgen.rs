@@ -7,13 +7,15 @@ use clap::Parser;
 extern crate rpassword;
 use rpassword::read_password;
 mod keys;
-use keys::{Cert, KeyMaster};
+use keys::{Cert, DatabaseEntry, KeyMaster};
 use std::io::{self, BufRead, Write};
 
 #[derive(Parser)]
 struct Cli {
     /// Input master key pair
     ca_keys: String,
+    /// Issuer
+    issuer: String,
 }
 
 fn main() {
@@ -37,5 +39,6 @@ fn main() {
     let passphrase = read_password().unwrap();
     let keys = KeyMaster::import_from_file(&args.ca_keys, &ca_passphrase);
 
-    Cert::generate(keys, &passphrase, &name);
+    let cert: Cert = Cert::generate(keys, &args.issuer, &passphrase, &name);
+    cert.store_database_entry(&name);
 }

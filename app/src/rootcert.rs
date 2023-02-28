@@ -17,14 +17,6 @@ use std::path::Path;
 extern crate getopts;
 use getopts::Options;
 
-#[derive(Parser)]
-struct Cli {
-    /// The pattern to look for
-    passphrase: String,
-    /// The path to the file to store
-    path: String,
-}
-
 fn print_usage(program: &str, opts: Options) {
     let brief = format!("Usage: {} FILE [options]", program);
     print!("{}", opts.usage(&brief));
@@ -42,10 +34,10 @@ fn main() {
         "set input keys file to be added to root cert",
         "name",
     );
-    opts.optopt("e", "era", "era the input file belongs to", "id");
-
+    opts.optopt("is", "issuer", "issuer id", "id");
     opts.optflag("p", "print", "print public keys in root certificate");
     opts.optflag("h", "help", "print this help menu");
+
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
         Err(f) => {
@@ -72,11 +64,11 @@ fn main() {
         return;
     }
 
-    if !matches.opt_present("i") && !matches.opt_present("e") {
+    if !matches.opt_present("i") && !matches.opt_present("is") {
         print_usage(&args[0], opts);
         return;
     }
-    let era: u64 = matches.opt_str("e").unwrap().parse::<u64>().unwrap();
+    let issuer: String = matches.opt_str("e").unwrap().parse::<String>().unwrap();
     let keys_file: String = matches.opt_str("i").unwrap();
 
     print!("Enter passphrase for {keys_file}: ");
@@ -85,16 +77,21 @@ fn main() {
 
     let key_pair: KeyPair = KeyPair::from_file(keys_file.as_str(), passphrase.as_str());
 
-    let mut rc: RootCerts = RootCerts {
+    let mut rcs: RootCerts = RootCerts {
         certs: Vec::<RootCert>::new(),
     };
 
     if rs == true {
-        rc = RootCerts::from_file(&root_cert_name);
+        rcs = RootCerts::from_file(&root_cert_name);
     }
 
-    rc.add_pub_key(key_pair.public_key.as_str(), era);
-    rc.to_file(&root_cert_name);
+    let rc: RootCert = RootCert {
+        public_key: key_pair.public_key.clone(),
+        time: chrono::Local::now().to_rfc3339(),
+        issuer: issuer.clone(),
+    };
+    rcs.add_rootcert(&rc);
+    rcs.to_file(&root_cert_name);
 
     println!("Root cert: {root_cert_name}");
 }

@@ -1,5 +1,5 @@
 mod keys;
-use keys::{hash_string, KeyMaster, RootCerts};
+use keys::{hash_string, secp256k1_decrypt, secp256k1_encrypt, KeyMaster, RootCerts};
 
 use grpc::{ServerHandlerContext, ServerRequestSingle, ServerResponseUnarySink};
 // importing generated gRPC code
@@ -29,7 +29,7 @@ impl PoH for MyPoH {
         let cert = req.message.get_cert();
         let pub_key = req.message.get_pub_key();
         let mut valid: bool = false;
-        let mut cert_era: u64 = 0;
+        let mut cert_issuer: String = String::new();
 
         for rootcert in &self.rootcerts.certs {
             if self
@@ -37,12 +37,15 @@ impl PoH for MyPoH {
                 .verify_with_public_key(&rootcert.public_key, &pub_key, cert)
             {
                 valid = true;
-                cert_era = rootcert.era;
+                cert_issuer = rootcert.issuer.clone();
             }
-            println!("pub key: {}, cert: {}, pub_key_hash: {}", pub_key, cert, hash_string(pub_key));
-            let enc_d = self.keymaster.encrypt(pub_key, cert);
+            println!(
+                "pub key: {}, cert: {}, issuer: {}",
+                pub_key, cert, cert_issuer
+            );
+            /*let enc_d = secp256k1_encrypt(pub_key, cert);
             println!("enc_d: {}", enc_d);
-            println!("enc_d_hash: {}", hash_string(&enc_d));
+            println!("enc_d_hash: {}", hash_string(&enc_d));*/
         }
 
         if valid {
@@ -53,6 +56,8 @@ impl PoH for MyPoH {
                 println!("Message signature didn't match");
             }
         }
+
+        // Message contains reference to v
 
         // sent the response
         println!("Received message {}, valid: {}", msg, valid);

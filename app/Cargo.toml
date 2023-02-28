@@ -28,6 +28,12 @@ path="./src/keyinspect.rs"
 name="rootcert"
 path="./src/rootcert.rs"
 
+[[bin]]
+name="database"
+path="./src/database.rs"
+
+
+
 [dependencies]
 protobuf        = "2"
 httpbis         = { git = "https://github.com/stepancheg/rust-http2" }

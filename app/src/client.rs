@@ -37,7 +37,10 @@ impl Client {
         }
     }
 
-    pub async fn send_msg(&self, msg: &str) -> Result<InitializeResponse, Box<dyn std::error::Error>> {
+    pub async fn send_msg(
+        &self,
+        msg: &str,
+    ) -> Result<InitializeResponse, Box<dyn std::error::Error>> {
         let mut req = InitializeRequest::new();
         req.set_msg(msg.to_string());
         req.set_pub_key(self.keymaster.public_key.to_string());

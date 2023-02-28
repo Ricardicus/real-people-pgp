@@ -7,21 +7,24 @@ use secp256k1::bitcoin_hashes::sha256;
 use secp256k1::rand::rngs::OsRng;
 use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey, Signature};
 
-use serde_derive::{Deserialize};
+use serde_derive::Deserialize;
 use sha2::{Digest, Sha256};
 
 use rmp_serde::Serializer;
 use serde::Serialize;
 use std::path::Path;
-use std::str::{FromStr, from_utf8};
+use std::str::{from_utf8, FromStr};
 
 use crypto::buffer::ReadBuffer;
 use crypto::buffer::{BufferResult, RefReadBuffer, RefWriteBuffer, WriteBuffer};
 use crypto::rc4::Rc4;
 use crypto::symmetriccipher::{Decryptor, Encryptor};
-use std::fs::{create_dir_all, File};
-use std::io::{Read, Write};
 use ecies::{decrypt, encrypt};
+use std::fs::{create_dir, create_dir_all, File};
+use std::io::{Read, Write};
+
+use chrono::offset::Local;
+use std::collections::HashMap;
 
 pub struct KeyMaster {
     pub secp: Secp256k1<All>,
@@ -40,17 +43,33 @@ pub struct KeyPair {
 pub struct Cert {
     pub public_key: String,
     pub signature: String,
+    pub issuer: String,
+    pub time: String,
+    pub ca_public_key: String,
 }
 
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
 pub struct RootCert {
     pub public_key: String,
-    pub era: u64,
+    pub time: String,
+    pub issuer: String,
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct RootCerts {
     pub certs: Vec<RootCert>,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct DatabaseEntry {
+    pub time: String,
+    pub issuer: String,
+    pub public_key: String,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct Database {
+    pub entries: HashMap<String, DatabaseEntry>,
 }
 
 /* Keymaster holds the keys */
@@ -146,24 +165,11 @@ impl KeyMaster {
         km.holding_these(&key_pair.secret_key, &key_pair.public_key);
         return km;
     }
-
-    pub fn encrypt(&self, pk: &str, msg: &str) -> String {
-        let pk_vec: &[u8] = &hex::decode(pk).unwrap();
-        let msg_vec: &[u8] = &msg.as_bytes();
-        let enc_vec: &[u8] = &encrypt(pk_vec, msg_vec).unwrap();
-        return hex::encode(enc_vec);
-    }
-    pub fn decrypt(&self, sk: &str, msg: &str) -> String {
-        let sk_vec: &[u8] = &hex::decode(sk).unwrap();
-        let msg_vec: &[u8] = &hex::decode(msg).unwrap();
-        let enc_vec: &[u8] = &decrypt(sk_vec, msg_vec).unwrap();
-        return from_utf8(enc_vec).unwrap().to_string();
-    }
 }
 
 impl RootCerts {
     pub fn from_file(file: &str) -> RootCerts {
-        let mut filecheck = File::open(file).expect("failed to open file");
+        let mut filecheck = File::open(file).expect(&format!("Failed to open file: {}", file));
         let mut data: Vec<u8> = Vec::<u8>::new();
         filecheck
             .read_to_end(&mut data)
@@ -174,16 +180,15 @@ impl RootCerts {
 
     pub fn print(&self) {
         for cert in &self.certs {
-            println!("{} ({})", cert.public_key, cert.era);
+            println!(
+                "public_key:{}\nissuer: {}\ntime: {}",
+                cert.public_key, cert.issuer, cert.time
+            );
         }
     }
 
-    pub fn add_pub_key(&mut self, pub_key: &str, era: u64) {
-        let rc: RootCert = RootCert {
-            public_key: pub_key.to_string(),
-            era: era,
-        };
-        self.certs.push(rc);
+    pub fn add_rootcert(&mut self, root_cert: &RootCert) {
+        self.certs.push(root_cert.clone());
     }
 
     pub fn get_filename() -> String {
@@ -284,7 +289,7 @@ impl KeyPair {
 }
 
 impl Cert {
-    pub fn generate(keys: KeyMaster, passphrase: &str, out_dir: &str) -> Self {
+    pub fn generate(keys: KeyMaster, issuer: &str, passphrase: &str, out_dir: &str) -> Self {
         let cert_keys = KeyMaster::new(Some(passphrase));
         let signature: String = keys.sign(cert_keys.public_key.to_string());
 
@@ -296,13 +301,26 @@ impl Cert {
         println!("keys_path: {}", keys_path);
         cert_keys.export_to_file(&keys_path);
 
+        /* Current date and time in Rust to string */
         let new_cert = Cert {
             public_key: cert_keys.public_key,
             signature: signature,
+            ca_public_key: keys.public_key,
+            time: Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            issuer: issuer.to_string(),
         };
 
         new_cert.store(out_dir);
         return new_cert;
+    }
+
+    pub fn store_database_entry(&self, out_dir: &str) {
+        let entry: DatabaseEntry = DatabaseEntry {
+            time: chrono::Local::now().to_rfc3339(),
+            issuer: self.issuer.clone(),
+            public_key: self.public_key.clone(),
+        };
+        entry.store(out_dir);
     }
 
     pub fn store(&self, out_dir: &str) {
@@ -318,8 +336,9 @@ impl Cert {
         f.write(&buf[..]).expect("Failed to write bytes");
         println!("Stored new certificate file {filepath}");
     }
+
     pub fn from_file(file: &str) -> Cert {
-        let mut filecheck = File::open(file).expect("failed to open file");
+        let mut filecheck = File::open(file).expect(&format!("Failed to open file: {}", file));
         let mut data: Vec<u8> = Vec::<u8>::new();
         filecheck
             .read_to_end(&mut data)
@@ -327,6 +346,84 @@ impl Cert {
 
         return rmp_serde::from_slice(&data).unwrap();
     }
+}
+
+impl DatabaseEntry {
+    pub fn store(&self, out_dir: &str) {
+        let mut buf = Vec::new();
+        let filename = "entry.pohdbe";
+        let filepath = format!("{}/{}", out_dir, filename);
+
+        self.serialize(&mut Serializer::new(&mut buf)).unwrap();
+        let mut f = File::create(filepath.to_string())
+            .expect(&format!("Failed to create file: {}", filepath)[..]);
+
+        /* Writing to file */
+        f.write(&buf[..]).expect("Failed to write bytes");
+        println!("Stored new database entry file {filepath}");
+    }
+    pub fn from_file(file: &str) -> DatabaseEntry {
+        let mut filecheck = File::open(file).expect(&format!("Failed to open file: {}", file));
+        let mut data: Vec<u8> = Vec::<u8>::new();
+        filecheck
+            .read_to_end(&mut data)
+            .expect("Failed to read file {file}");
+
+        return rmp_serde::from_slice(&data).unwrap();
+    }
+    pub fn print(&self) {
+        println!("[{} {}]", self.issuer, self.time);
+    }
+}
+
+impl Database {
+    pub fn store(&self, out_dir: &str) {
+        let mut buf = Vec::new();
+        let filename = "db.pohd";
+
+        if !Path::new(out_dir).exists() {
+            create_dir(out_dir).expect("Unable to create directory {out_dir}");
+        }
+
+        let filepath = format!("{}/{}", out_dir, filename);
+
+        self.serialize(&mut Serializer::new(&mut buf)).unwrap();
+        let mut f = File::create(filepath.to_string())
+            .expect(&format!("Failed to create file: {}", filepath)[..]);
+
+        /* Writing to file */
+        f.write(&buf[..]).expect("Failed to write bytes");
+        println!("Stored new database file {filepath}");
+    }
+    pub fn from_file(file: &str) -> Database {
+        let mut filecheck = File::open(file).expect(&format!("Failed to open file: {}", file));
+        let mut data: Vec<u8> = Vec::<u8>::new();
+        filecheck
+            .read_to_end(&mut data)
+            .expect("Failed to open file {file}");
+
+        return rmp_serde::from_slice(&data).unwrap();
+    }
+    pub fn print(&self) {
+        for (key, val) in &self.entries {
+            print!("{}: ", key);
+            val.print();
+        }
+    }
+}
+
+/* Quick and dirty secp encrypt/decrypt */
+pub fn secp256k1_encrypt(pk: &str, msg: &str) -> String {
+    let pk_vec: &[u8] = &hex::decode(pk).unwrap();
+    let msg_vec: &[u8] = &msg.as_bytes();
+    let enc_vec: &[u8] = &encrypt(pk_vec, msg_vec).unwrap();
+    return hex::encode(enc_vec);
+}
+pub fn secp256k1_decrypt(sk: &str, msg: &str) -> String {
+    let sk_vec: &[u8] = &hex::decode(sk).unwrap();
+    let msg_vec: &[u8] = &hex::decode(msg).unwrap();
+    let enc_vec: &[u8] = &decrypt(sk_vec, msg_vec).unwrap();
+    return from_utf8(enc_vec).unwrap().to_string();
 }
 
 /* sha256 */
