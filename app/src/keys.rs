@@ -378,11 +378,11 @@ impl DatabaseEntry {
 
 impl Database {
     pub fn get_std_db() -> &'static str {
-        return "databases/db.pohd";
+        return "databases/db.pohdb";
     }
     pub fn store(&self, out_dir: &str) {
         let mut buf = Vec::new();
-        let filename = "db.pohd";
+        let filename = Database::get_std_db();
 
         if !Path::new(out_dir).exists() {
             create_dir(out_dir).expect("Unable to create directory {out_dir}");
