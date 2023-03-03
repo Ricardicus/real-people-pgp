@@ -372,11 +372,14 @@ impl DatabaseEntry {
         return rmp_serde::from_slice(&data).unwrap();
     }
     pub fn print(&self) {
-        println!("[{} {}]", self.issuer, self.time);
+        println!("[issed by {} at {}]", self.issuer, self.time);
     }
 }
 
 impl Database {
+    pub fn get_std_db() -> &'static str {
+        return "databases/db.pohd";
+    }
     pub fn store(&self, out_dir: &str) {
         let mut buf = Vec::new();
         let filename = "db.pohd";

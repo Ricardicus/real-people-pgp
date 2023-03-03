@@ -29,12 +29,12 @@ fn main() {
     let root_cert_name = RootCerts::get_filename();
 
     opts.optopt(
-        "i",
-        "input",
+        "k",
+        "keys",
         "set input keys file to be added to root cert",
         "name",
     );
-    opts.optopt("is", "issuer", "issuer id", "id");
+    opts.optopt("i", "issuer", "issuer id", "id");
     opts.optflag("p", "print", "print public keys in root certificate");
     opts.optflag("h", "help", "print this help menu");
 
@@ -64,12 +64,12 @@ fn main() {
         return;
     }
 
-    if !matches.opt_present("i") && !matches.opt_present("is") {
+    if !matches.opt_present("i") || !matches.opt_present("k") {
         print_usage(&args[0], opts);
         return;
     }
-    let issuer: String = matches.opt_str("e").unwrap().parse::<String>().unwrap();
-    let keys_file: String = matches.opt_str("i").unwrap();
+    let issuer: String = matches.opt_str("i").unwrap().parse::<String>().unwrap();
+    let keys_file: String = matches.opt_str("k").unwrap();
 
     print!("Enter passphrase for {keys_file}: ");
     std::io::stdout().flush().unwrap();

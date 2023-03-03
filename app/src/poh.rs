@@ -313,7 +313,7 @@ pub struct InitializeResponse {
     // message fields
     pub msg: ::std::string::String,
     pub valid: bool,
-    pub session: i64,
+    pub session_key: ::std::string::String,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -371,19 +371,30 @@ impl InitializeResponse {
         self.valid = v;
     }
 
-    // int64 session = 3;
+    // string session_key = 3;
 
 
-    pub fn get_session(&self) -> i64 {
-        self.session
+    pub fn get_session_key(&self) -> &str {
+        &self.session_key
     }
-    pub fn clear_session(&mut self) {
-        self.session = 0;
+    pub fn clear_session_key(&mut self) {
+        self.session_key.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_session(&mut self, v: i64) {
-        self.session = v;
+    pub fn set_session_key(&mut self, v: ::std::string::String) {
+        self.session_key = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_session_key(&mut self) -> &mut ::std::string::String {
+        &mut self.session_key
+    }
+
+    // Take field
+    pub fn take_session_key(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.session_key, ::std::string::String::new())
     }
 }
 
@@ -407,11 +418,7 @@ impl ::protobuf::Message for InitializeResponse {
                     self.valid = tmp;
                 },
                 3 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_int64()?;
-                    self.session = tmp;
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.session_key)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -431,8 +438,8 @@ impl ::protobuf::Message for InitializeResponse {
         if self.valid != false {
             my_size += 2;
         }
-        if self.session != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.session, ::protobuf::wire_format::WireTypeVarint);
+        if !self.session_key.is_empty() {
+            my_size += ::protobuf::rt::string_size(3, &self.session_key);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -446,8 +453,8 @@ impl ::protobuf::Message for InitializeResponse {
         if self.valid != false {
             os.write_bool(2, self.valid)?;
         }
-        if self.session != 0 {
-            os.write_int64(3, self.session)?;
+        if !self.session_key.is_empty() {
+            os.write_string(3, &self.session_key)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -497,10 +504,10 @@ impl ::protobuf::Message for InitializeResponse {
                 |m: &InitializeResponse| { &m.valid },
                 |m: &mut InitializeResponse| { &mut m.valid },
             ));
-            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt64>(
-                "session",
-                |m: &InitializeResponse| { &m.session },
-                |m: &mut InitializeResponse| { &mut m.session },
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "session_key",
+                |m: &InitializeResponse| { &m.session_key },
+                |m: &mut InitializeResponse| { &mut m.session_key },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<InitializeResponse>(
                 "InitializeResponse",
@@ -520,7 +527,7 @@ impl ::protobuf::Clear for InitializeResponse {
     fn clear(&mut self) {
         self.msg.clear();
         self.valid = false;
-        self.session = 0;
+        self.session_key.clear();
         self.unknown_fields.clear();
     }
 }
@@ -901,14 +908,14 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x0fproto/poh.proto\x12\x03poh\"k\n\x11InitializeRequest\x12\x17\n\x07\
     pub_key\x18\x01\x20\x01(\tR\x06pubKey\x12\x12\n\x04cert\x18\x02\x20\x01(\
     \tR\x04cert\x12\x10\n\x03msg\x18\x03\x20\x01(\tR\x03msg\x12\x17\n\x07msg\
-    _sig\x18\x04\x20\x01(\tR\x06msgSig\"V\n\x12InitializeResponse\x12\x10\n\
+    _sig\x18\x04\x20\x01(\tR\x06msgSig\"]\n\x12InitializeResponse\x12\x10\n\
     \x03msg\x18\x01\x20\x01(\tR\x03msg\x12\x14\n\x05valid\x18\x02\x20\x01(\
-    \x08R\x05valid\x12\x18\n\x07session\x18\x03\x20\x01(\x03R\x07session\">\
-    \n\x13PoHRootCertificates\x12'\n\x02rc\x18\x01\x20\x03(\x0b2\x17.poh.PoH\
-    RootCertificateR\x02rc\"J\n\x12PoHRootCertificate\x12\x1d\n\npublic_key\
-    \x18\x01\x20\x01(\tR\tpublicKey\x12\x15\n\x06era_id\x18\x02\x20\x01(\x05\
-    R\x05eraId2D\n\x03PoH\x12=\n\ninitialize\x12\x16.poh.InitializeRequest\
-    \x1a\x17.poh.InitializeResponseb\x06proto3\
+    \x08R\x05valid\x12\x1f\n\x0bsession_key\x18\x03\x20\x01(\tR\nsessionKey\
+    \">\n\x13PoHRootCertificates\x12'\n\x02rc\x18\x01\x20\x03(\x0b2\x17.poh.\
+    PoHRootCertificateR\x02rc\"J\n\x12PoHRootCertificate\x12\x1d\n\npublic_k\
+    ey\x18\x01\x20\x01(\tR\tpublicKey\x12\x15\n\x06era_id\x18\x02\x20\x01(\
+    \x05R\x05eraId2D\n\x03PoH\x12=\n\ninitialize\x12\x16.poh.InitializeReque\
+    st\x1a\x17.poh.InitializeResponseb\x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

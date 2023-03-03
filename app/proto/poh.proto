@@ -22,7 +22,7 @@ syntax = "proto3";
  message InitializeResponse {
    string msg = 1;
    bool valid = 2;
-   int64 session = 3;
+   string session_key = 3;
  }
 
 message PoHRootCertificates {

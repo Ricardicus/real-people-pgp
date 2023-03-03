@@ -59,7 +59,11 @@ fn main() {
 
     let cmd: String = matches.opt_str("c").unwrap().parse::<String>().unwrap();
     if cmd == "print" {
-        let db_path: String = matches.opt_str("d").unwrap().parse::<String>().unwrap();
+        let db_path: String = matches
+            .opt_str("d")
+            .unwrap()
+            .parse::<String>()
+            .expect("Found no database argument -d");
         let db: Database = Database::from_file(&db_path);
         db.print();
         return;
@@ -72,7 +76,11 @@ fn main() {
         return;
     }
     if cmd == "append" {
-        let db_path: String = matches.opt_str("d").unwrap().parse::<String>().unwrap();
+        let db_path: String = matches
+            .opt_str("d")
+            .unwrap()
+            .parse::<String>()
+            .expect("Found no database argument -d");
         let mut db: Database = Database::from_file(&db_path);
         if !matches.opt_present("e") {
             print_usage(&args[0], opts);
