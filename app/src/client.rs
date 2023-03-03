@@ -70,6 +70,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let response: InitializeResponse = client.send_msg(&args.message).await?;
     // wait for response
-    println!("{:?}: valid: {}", response.msg, response.valid);
+    println!(
+        "{:?}: valid: {}, session key: {}",
+        response.msg, response.valid, response.session_key
+    );
     Ok(())
 }

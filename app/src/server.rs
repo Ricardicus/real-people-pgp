@@ -1,8 +1,10 @@
 mod keys;
 use keys::{hash_string, secp256k1_decrypt, secp256k1_encrypt, Database, KeyMaster, RootCerts};
 
-use std::sync::Mutex;
 use grpc::{ServerHandlerContext, ServerRequestSingle, ServerResponseUnarySink};
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::{Duration, Instant};
 // importing generated gRPC code
 use poh_grpc::*;
 // importing types for messages
@@ -21,13 +23,15 @@ enum SessionState {
 struct Session {
     state: SessionState,
     keys: KeyMaster,
+    time: Instant,
 }
 
 impl Session {
     pub fn new() -> Self {
         Session {
             keys: KeyMaster::new(None),
-            state: SessionState::Initialized
+            state: SessionState::Initialized,
+            time: Instant::now(),
         }
     }
 }
@@ -36,31 +40,31 @@ struct MyPoH {
     rootcerts: RootCerts,
     keymaster: KeyMaster,
     database: Database,
-    sessions: Mutex<HashMap<String, Session>>,
+    sessions: Arc<Mutex<HashMap<String, Session>>>,
 }
 
 struct ProcessResult {
     msg: String,
-    session_key: String
+    session_key: String,
 }
 
-fn process(session: &mut HashMap<String, Session>, public_key: &str) -> ProcessResult {
-        if session.contains_key(public_key) {
-            let s: &Session = session.get(public_key).unwrap();
-            ProcessResult {
-                session_key: s.keys.public_key.to_string(),
-                msg: "Session already initialized".to_string()
-            }
-        } else {
-            let s = Session::new();
-            let key = s.keys.public_key.to_string();
-            session.insert(public_key.to_string(), s);
-            ProcessResult {
-                session_key: key,
-                msg: "Initialized a new session".to_string()
-            }
+fn process(sessions: &mut HashMap<String, Session>, public_key: &str) -> ProcessResult {
+    if sessions.contains_key(public_key) {
+        let s: &Session = sessions.get(public_key).unwrap();
+        ProcessResult {
+            session_key: s.keys.public_key.to_string(),
+            msg: "Session already initialized".to_string(),
+        }
+    } else {
+        let s = Session::new();
+        let key = s.keys.public_key.to_string();
+        sessions.insert(public_key.to_string(), s);
+        ProcessResult {
+            session_key: key,
+            msg: "Initialized a new session".to_string(),
         }
     }
+}
 
 impl PoH for MyPoH {
     // rpc for service
@@ -91,9 +95,6 @@ impl PoH for MyPoH {
                 "pub key: {}, cert: {}, issuer: {}",
                 pub_key, cert, cert_issuer
             );
-            /*let enc_d = secp256k1_encrypt(pub_key, cert);
-            println!("enc_d: {}", enc_d);
-            println!("enc_d_hash: {}", hash_string(&enc_d));*/
         }
 
         if valid {
@@ -114,26 +115,60 @@ impl PoH for MyPoH {
             valid = false;
         }
 
+        println!("Received message {}, valid: {}", msg, valid);
+        r.set_valid(valid);
+        r.set_msg("Checked client validity".to_string());
+
         if valid {
-            let mut map: &mut HashMap<String, Session> = &mut self.sessions.lock().unwrap();
+            let access = self.sessions.clone();
+            let map: &mut HashMap<String, Session> = &mut access.lock().unwrap();
             let res: ProcessResult = process(map, &pub_key);
             r.set_session_key(res.session_key);
             r.set_msg(res.msg);
         }
 
         // sent the response
-        println!("Received message {}, valid: {}", msg, valid);
-        r.set_valid(valid);
-        r.set_msg("Checked client validity".to_string());
         resp.finish(r)
     }
+}
 
+fn session_cleanup(sessions: &mut HashMap<String, Session>, seconds: u64) {
+    let mut remove: Vec<String> = Vec::<String>::new();
+    for (key, session) in &mut *sessions {
+        let age: Duration = session.time.elapsed();
+        if age.as_secs() > seconds {
+            remove.push(key.to_string());
+        }
+    }
+    for key in remove {
+        println!("Removing session {}", key);
+        sessions.remove(&key.to_string());
+    }
+}
+
+fn launch_cleanup(server_data: Arc<Mutex<HashMap<String, Session>>>) {
+    let cleanup_time_secs = 30;
+    let data = server_data.clone();
+    thread::Builder::new()
+        .name("cleanup".to_string())
+        .spawn(move || {
+            while true {
+                {
+                    let mut data = data.lock().unwrap();
+                    session_cleanup(&mut data, cleanup_time_secs * 3);
+                }
+                thread::sleep(Duration::from_secs(cleanup_time_secs));
+            }
+        })
+        .expect("Failed to create thread");
 }
 
 fn main() {
     let port = 50051;
     // creating server
     let mut server = grpc::ServerBuilder::new_plain();
+    let server_data: Arc<Mutex<HashMap<String, Session>>> =
+        Arc::new(HashMap::<String, Session>::new().into());
     // adding port to server for http
     server.http.set_port(port);
     // adding say service to server
@@ -141,11 +176,14 @@ fn main() {
         rootcerts: RootCerts::read_rootcert(),
         keymaster: KeyMaster::new(None),
         database: Database::from_file(Database::get_std_db()),
-        sessions: HashMap::<String, Session>::new().into()
+        sessions: server_data.clone(),
     }));
     // running the server
     let _server = server.build().expect("server");
     println!("greeter server started on port {}", port,);
+    // starting session cleanup thread
+    launch_cleanup(server_data.clone());
+
     // stopping the program from finishing
     loop {
         std::thread::park();
