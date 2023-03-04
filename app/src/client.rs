@@ -19,13 +19,22 @@ struct Cli {
     /// The path to the file to store
     cert: String,
     keys: String,
-    message: String,
 }
 
 struct Client {
     keymaster: KeyMaster,
     cert: Cert,
     client: PoHClient,
+}
+
+enum Response {
+    InitializeResponse(poh::InitializeResponse),
+}
+
+struct Session {
+    session_key: String,
+    keys: KeyMaster,
+    responses: Vec<Response>,
 }
 
 impl Client {
@@ -37,22 +46,28 @@ impl Client {
         }
     }
 
-    pub async fn send_msg(
-        &self,
-        msg: &str,
-    ) -> Result<InitializeResponse, Box<dyn std::error::Error>> {
+    pub async fn initialize_session(&self) -> Result<Session, Box<dyn std::error::Error>> {
+        let keys = KeyMaster::new(None);
         let mut req = InitializeRequest::new();
-        req.set_msg(msg.to_string());
+
+        req.set_msg(keys.public_key.to_string());
         req.set_pub_key(self.keymaster.public_key.to_string());
         req.set_cert(self.cert.signature.to_string());
-        req.set_msg_sig(self.keymaster.sign(hash_string(msg)));
+        req.set_msg_sig(self.keymaster.sign(hash_string(keys.public_key.as_str())));
         // send the request
         let resp = self
             .client
             .initialize(grpc::RequestOptions::new(), req)
             .join_metadata_result()
             .await?;
-        Ok(resp.1)
+
+        let mut session = Session {
+            session_key: resp.1.session_key.to_string(),
+            responses: Vec::<Response>::new(),
+            keys: keys,
+        };
+        session.responses.push(Response::InitializeResponse(resp.1));
+        Ok(session)
     }
 }
 
@@ -68,11 +83,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client: Client = Client::new(host, port, &args.keys, &args.cert, passphrase.as_str());
 
-    let response: InitializeResponse = client.send_msg(&args.message).await?;
-    // wait for response
-    println!(
-        "{:?}: valid: {}, session key: {}",
-        response.msg, response.valid, response.session_key
-    );
+    let response: Session = client.initialize_session().await?;
+
+    for resp in response.responses {
+        match resp {
+            Response::InitializeResponse(InitializeResponse {
+                msg,
+                valid,
+                session_key,
+                ..
+            }) => {
+                println!("{:?}: valid: {}, session key: {}", msg, valid, session_key);
+            }
+        }
+    }
     Ok(())
 }

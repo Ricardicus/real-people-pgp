@@ -15,7 +15,7 @@ mod poh_grpc;
 use std::collections::HashMap;
 
 enum SessionState {
-    Initialized,
+    Initialize,
     Verify,
     Sign,
 }
@@ -30,7 +30,7 @@ impl Session {
     pub fn new() -> Self {
         Session {
             keys: KeyMaster::new(None),
-            state: SessionState::Initialized,
+            state: SessionState::Initialize,
             time: Instant::now(),
         }
     }
@@ -48,21 +48,31 @@ struct ProcessResult {
     session_key: String,
 }
 
-fn process(sessions: &mut HashMap<String, Session>, public_key: &str) -> ProcessResult {
-    if sessions.contains_key(public_key) {
-        let s: &Session = sessions.get(public_key).unwrap();
-        ProcessResult {
-            session_key: s.keys.public_key.to_string(),
-            msg: "Session already initialized".to_string(),
+fn process(
+    sessions: &mut HashMap<String, Session>,
+    public_key: &str,
+    state: SessionState,
+) -> Result<ProcessResult, &'static str> {
+    match state {
+        SessionState::Initialize => {
+            if sessions.contains_key(public_key) {
+                let s: &Session = sessions.get(public_key).unwrap();
+                Ok(ProcessResult {
+                    session_key: s.keys.public_key.to_string(),
+                    msg: "Session already initialized".to_string(),
+                })
+            } else {
+                let s = Session::new();
+                let key = s.keys.public_key.to_string();
+                sessions.insert(public_key.to_string(), s);
+                Ok(ProcessResult {
+                    session_key: key,
+                    msg: "Initialized a new session".to_string(),
+                })
+            }
         }
-    } else {
-        let s = Session::new();
-        let key = s.keys.public_key.to_string();
-        sessions.insert(public_key.to_string(), s);
-        ProcessResult {
-            session_key: key,
-            msg: "Initialized a new session".to_string(),
-        }
+        SessionState::Verify => Err("Not implemented yet"),
+        SessionState::Sign => Err("Not implemented yet"),
     }
 }
 
@@ -122,7 +132,7 @@ impl PoH for MyPoH {
         if valid {
             let access = self.sessions.clone();
             let map: &mut HashMap<String, Session> = &mut access.lock().unwrap();
-            let res: ProcessResult = process(map, &pub_key);
+            let res: ProcessResult = process(map, &pub_key, SessionState::Initialize).unwrap();
             r.set_session_key(res.session_key);
             r.set_msg(res.msg);
         }
