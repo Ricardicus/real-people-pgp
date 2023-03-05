@@ -1,5 +1,5 @@
 use std::env;
-use std::sync::Arc;
+
 
 extern crate serde;
 #[macro_use]
@@ -7,12 +7,12 @@ extern crate serde_derive;
 extern crate rmp_serde as rmps;
 
 extern crate rpassword;
-use rpassword::read_password;
+
 mod keys;
 use clap::Parser;
-use keys::{Database, DatabaseEntry, KeyPair};
-use std::io::Write;
-use std::path::Path;
+use keys::{Database, DatabaseEntry};
+
+
 
 extern crate getopts;
 use getopts::Options;
@@ -72,7 +72,7 @@ fn main() {
         let db: Database = Database {
             entries: HashMap::new(),
         };
-        db.store("databases");
+        db.store();
         return;
     }
     if cmd == "append" {
@@ -88,9 +88,9 @@ fn main() {
         }
         let entry: String = matches.opt_str("e").unwrap().parse::<String>().unwrap();
         let dbe: DatabaseEntry = DatabaseEntry::from_file(&entry);
-        db.entries.insert(dbe.public_key.clone(), dbe);
+        db.entries.insert(dbe.public_key_hash.clone(), dbe);
 
-        db.store("databases");
+        db.store();
         println!("Added entry {entry} to database file {db_path}");
         return;
     }

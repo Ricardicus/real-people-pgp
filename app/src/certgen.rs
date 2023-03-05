@@ -1,4 +1,4 @@
-use chrono;
+
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -7,7 +7,7 @@ use clap::Parser;
 extern crate rpassword;
 use rpassword::read_password;
 mod keys;
-use keys::{Cert, DatabaseEntry, KeyMaster};
+use keys::{Cert, KeyMaster};
 use std::io::{self, BufRead, Write};
 
 #[derive(Parser)]

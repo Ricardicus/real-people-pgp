@@ -1,5 +1,5 @@
 mod keys;
-use keys::{hash_string, secp256k1_decrypt, secp256k1_encrypt, Database, KeyMaster, RootCerts};
+use keys::{hash_string, Database, KeyMaster, RootCerts};
 
 use grpc::{ServerHandlerContext, ServerRequestSingle, ServerResponseUnarySink};
 use std::sync::{Arc, Mutex};
@@ -12,6 +12,7 @@ use poh::*;
 mod poh;
 mod poh_grpc;
 
+use chrono::offset::Local;
 use std::collections::HashMap;
 
 enum SessionState {
@@ -101,10 +102,6 @@ impl PoH for MyPoH {
                 valid = true;
                 cert_issuer = rootcert.issuer.clone();
             }
-            println!(
-                "pub key: {}, cert: {}, issuer: {}",
-                pub_key, cert, cert_issuer
-            );
         }
 
         if valid {
@@ -116,9 +113,10 @@ impl PoH for MyPoH {
             }
         }
 
-        if self.database.entries.contains_key(pub_key) {
+        let pub_key_hash = hash_string(&pub_key);
+        if self.database.entries.contains_key(&pub_key_hash) {
             // Verify that the issuer from certificate matches the database
-            if !cert_issuer.eq(&self.database.entries[pub_key].issuer) {
+            if !cert_issuer.eq(&self.database.entries[&pub_key_hash].issuer) {
                 valid = false;
             }
         } else {
@@ -133,8 +131,13 @@ impl PoH for MyPoH {
             let access = self.sessions.clone();
             let map: &mut HashMap<String, Session> = &mut access.lock().unwrap();
             let res: ProcessResult = process(map, &pub_key, SessionState::Initialize).unwrap();
-            r.set_session_key(res.session_key);
+            r.set_session_key(res.session_key.to_string());
             r.set_msg(res.msg);
+            println!(
+                "Created session {}, {}",
+                res.session_key,
+                Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
+            );
         }
 
         // sent the response
@@ -162,7 +165,7 @@ fn launch_cleanup(server_data: Arc<Mutex<HashMap<String, Session>>>) {
     thread::Builder::new()
         .name("cleanup".to_string())
         .spawn(move || {
-            while true {
+            loop {
                 {
                     let mut data = data.lock().unwrap();
                     session_cleanup(&mut data, cleanup_time_secs * 3);
@@ -190,7 +193,11 @@ fn main() {
     }));
     // running the server
     let _server = server.build().expect("server");
-    println!("greeter server started on port {}", port,);
+    println!(
+        "proof of human server started on port {}, {}",
+        port,
+        Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
+    );
     // starting session cleanup thread
     launch_cleanup(server_data.clone());
 

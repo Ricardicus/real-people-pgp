@@ -20,7 +20,7 @@ use crypto::buffer::{BufferResult, RefReadBuffer, RefWriteBuffer, WriteBuffer};
 use crypto::rc4::Rc4;
 use crypto::symmetriccipher::{Decryptor, Encryptor};
 use ecies::{decrypt, encrypt};
-use std::fs::{create_dir, create_dir_all, File};
+use std::fs::{create_dir_all, File};
 use std::io::{Read, Write};
 
 use chrono::offset::Local;
@@ -64,7 +64,7 @@ pub struct RootCerts {
 pub struct DatabaseEntry {
     pub time: String,
     pub issuer: String,
-    pub public_key: String,
+    pub public_key_hash: String,
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -318,7 +318,7 @@ impl Cert {
         let entry: DatabaseEntry = DatabaseEntry {
             time: chrono::Local::now().to_rfc3339(),
             issuer: self.issuer.clone(),
-            public_key: self.public_key.clone(),
+            public_key_hash: hash_string(&self.public_key.clone()),
         };
         entry.store(out_dir);
     }
@@ -380,15 +380,10 @@ impl Database {
     pub fn get_std_db() -> &'static str {
         return "databases/db.pohdb";
     }
-    pub fn store(&self, out_dir: &str) {
+
+    pub fn store(&self) {
         let mut buf = Vec::new();
-        let filename = Database::get_std_db();
-
-        if !Path::new(out_dir).exists() {
-            create_dir(out_dir).expect("Unable to create directory {out_dir}");
-        }
-
-        let filepath = format!("{}/{}", out_dir, filename);
+        let filepath = Database::get_std_db();
 
         self.serialize(&mut Serializer::new(&mut buf)).unwrap();
         let mut f = File::create(filepath.to_string())
