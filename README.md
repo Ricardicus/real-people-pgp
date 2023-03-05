@@ -17,6 +17,7 @@ Summary this far:
 * I am the current CA authority.
   * You need to ask me to generate you a set of keys (in person)
   * I host none of the keys online anywhere
+  * Do you want to be a CA? Can you handle it? Let me know. Lets meet.
   * All CA issuers are provided with name that is trackable in this project.
 * There is a simple server and client program available
   * The idea is to make it possible to host multiple of these servers
