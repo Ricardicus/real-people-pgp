@@ -8,6 +8,9 @@ syntax = "proto3";
  service PoH {
  // function which can be called
    rpc initialize (InitializeRequest) returns (InitializeResponse);
+ // challenge mechanism
+   rpc challenge_create (ChallengeCreateRequest) returns (ChallengeCreateResponse);
+   rpc challenge_reply (ChallengeReplyRequest) returns (ChallengeReplyResponse);
  }
 
  // argument
@@ -24,6 +27,30 @@ syntax = "proto3";
    bool valid = 2;
    string session_key = 3;
  }
+
+ message ChallengeCreateRequest {
+   string session_key = 1;
+   string pub_hash_enc = 2;
+   string pub_enc = 3;
+   uint64 valid_time_sec = 4;
+ }
+
+ message ChallengeCreateResponse {
+   bool valid = 1;
+   string info = 2;
+ }
+
+ message ChallengeReplyRequest {
+   string session_key = 1;
+   string pub_key_enc = 2;
+   string session_key_sign = 3;
+ }
+
+ message ChallengeReplyResponse {
+   bool valid = 1;
+ }
+
+
 
 message PoHRootCertificates {
    repeated PoHRootCertificate rc = 1;

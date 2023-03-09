@@ -545,6 +545,873 @@ impl ::protobuf::reflect::ProtobufValue for InitializeResponse {
 }
 
 #[derive(PartialEq,Clone,Default)]
+pub struct ChallengeCreateRequest {
+    // message fields
+    pub session_key: ::std::string::String,
+    pub pub_hash_enc: ::std::string::String,
+    pub pub_enc: ::std::string::String,
+    pub valid_time_sec: u64,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a ChallengeCreateRequest {
+    fn default() -> &'a ChallengeCreateRequest {
+        <ChallengeCreateRequest as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ChallengeCreateRequest {
+    pub fn new() -> ChallengeCreateRequest {
+        ::std::default::Default::default()
+    }
+
+    // string session_key = 1;
+
+
+    pub fn get_session_key(&self) -> &str {
+        &self.session_key
+    }
+    pub fn clear_session_key(&mut self) {
+        self.session_key.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_session_key(&mut self, v: ::std::string::String) {
+        self.session_key = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_session_key(&mut self) -> &mut ::std::string::String {
+        &mut self.session_key
+    }
+
+    // Take field
+    pub fn take_session_key(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.session_key, ::std::string::String::new())
+    }
+
+    // string pub_hash_enc = 2;
+
+
+    pub fn get_pub_hash_enc(&self) -> &str {
+        &self.pub_hash_enc
+    }
+    pub fn clear_pub_hash_enc(&mut self) {
+        self.pub_hash_enc.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_pub_hash_enc(&mut self, v: ::std::string::String) {
+        self.pub_hash_enc = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_pub_hash_enc(&mut self) -> &mut ::std::string::String {
+        &mut self.pub_hash_enc
+    }
+
+    // Take field
+    pub fn take_pub_hash_enc(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.pub_hash_enc, ::std::string::String::new())
+    }
+
+    // string pub_enc = 3;
+
+
+    pub fn get_pub_enc(&self) -> &str {
+        &self.pub_enc
+    }
+    pub fn clear_pub_enc(&mut self) {
+        self.pub_enc.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_pub_enc(&mut self, v: ::std::string::String) {
+        self.pub_enc = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_pub_enc(&mut self) -> &mut ::std::string::String {
+        &mut self.pub_enc
+    }
+
+    // Take field
+    pub fn take_pub_enc(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.pub_enc, ::std::string::String::new())
+    }
+
+    // uint64 valid_time_sec = 4;
+
+
+    pub fn get_valid_time_sec(&self) -> u64 {
+        self.valid_time_sec
+    }
+    pub fn clear_valid_time_sec(&mut self) {
+        self.valid_time_sec = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_valid_time_sec(&mut self, v: u64) {
+        self.valid_time_sec = v;
+    }
+}
+
+impl ::protobuf::Message for ChallengeCreateRequest {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.session_key)?;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.pub_hash_enc)?;
+                },
+                3 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.pub_enc)?;
+                },
+                4 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint64()?;
+                    self.valid_time_sec = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if !self.session_key.is_empty() {
+            my_size += ::protobuf::rt::string_size(1, &self.session_key);
+        }
+        if !self.pub_hash_enc.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.pub_hash_enc);
+        }
+        if !self.pub_enc.is_empty() {
+            my_size += ::protobuf::rt::string_size(3, &self.pub_enc);
+        }
+        if self.valid_time_sec != 0 {
+            my_size += ::protobuf::rt::value_size(4, self.valid_time_sec, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if !self.session_key.is_empty() {
+            os.write_string(1, &self.session_key)?;
+        }
+        if !self.pub_hash_enc.is_empty() {
+            os.write_string(2, &self.pub_hash_enc)?;
+        }
+        if !self.pub_enc.is_empty() {
+            os.write_string(3, &self.pub_enc)?;
+        }
+        if self.valid_time_sec != 0 {
+            os.write_uint64(4, self.valid_time_sec)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> ChallengeCreateRequest {
+        ChallengeCreateRequest::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "session_key",
+                |m: &ChallengeCreateRequest| { &m.session_key },
+                |m: &mut ChallengeCreateRequest| { &mut m.session_key },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "pub_hash_enc",
+                |m: &ChallengeCreateRequest| { &m.pub_hash_enc },
+                |m: &mut ChallengeCreateRequest| { &mut m.pub_hash_enc },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "pub_enc",
+                |m: &ChallengeCreateRequest| { &m.pub_enc },
+                |m: &mut ChallengeCreateRequest| { &mut m.pub_enc },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                "valid_time_sec",
+                |m: &ChallengeCreateRequest| { &m.valid_time_sec },
+                |m: &mut ChallengeCreateRequest| { &mut m.valid_time_sec },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<ChallengeCreateRequest>(
+                "ChallengeCreateRequest",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static ChallengeCreateRequest {
+        static instance: ::protobuf::rt::LazyV2<ChallengeCreateRequest> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(ChallengeCreateRequest::new)
+    }
+}
+
+impl ::protobuf::Clear for ChallengeCreateRequest {
+    fn clear(&mut self) {
+        self.session_key.clear();
+        self.pub_hash_enc.clear();
+        self.pub_enc.clear();
+        self.valid_time_sec = 0;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for ChallengeCreateRequest {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ChallengeCreateRequest {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct ChallengeCreateResponse {
+    // message fields
+    pub valid: bool,
+    pub info: ::std::string::String,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a ChallengeCreateResponse {
+    fn default() -> &'a ChallengeCreateResponse {
+        <ChallengeCreateResponse as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ChallengeCreateResponse {
+    pub fn new() -> ChallengeCreateResponse {
+        ::std::default::Default::default()
+    }
+
+    // bool valid = 1;
+
+
+    pub fn get_valid(&self) -> bool {
+        self.valid
+    }
+    pub fn clear_valid(&mut self) {
+        self.valid = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_valid(&mut self, v: bool) {
+        self.valid = v;
+    }
+
+    // string info = 2;
+
+
+    pub fn get_info(&self) -> &str {
+        &self.info
+    }
+    pub fn clear_info(&mut self) {
+        self.info.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_info(&mut self, v: ::std::string::String) {
+        self.info = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_info(&mut self) -> &mut ::std::string::String {
+        &mut self.info
+    }
+
+    // Take field
+    pub fn take_info(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.info, ::std::string::String::new())
+    }
+}
+
+impl ::protobuf::Message for ChallengeCreateResponse {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.valid = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.info)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.valid != false {
+            my_size += 2;
+        }
+        if !self.info.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.info);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.valid != false {
+            os.write_bool(1, self.valid)?;
+        }
+        if !self.info.is_empty() {
+            os.write_string(2, &self.info)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> ChallengeCreateResponse {
+        ChallengeCreateResponse::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                "valid",
+                |m: &ChallengeCreateResponse| { &m.valid },
+                |m: &mut ChallengeCreateResponse| { &mut m.valid },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "info",
+                |m: &ChallengeCreateResponse| { &m.info },
+                |m: &mut ChallengeCreateResponse| { &mut m.info },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<ChallengeCreateResponse>(
+                "ChallengeCreateResponse",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static ChallengeCreateResponse {
+        static instance: ::protobuf::rt::LazyV2<ChallengeCreateResponse> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(ChallengeCreateResponse::new)
+    }
+}
+
+impl ::protobuf::Clear for ChallengeCreateResponse {
+    fn clear(&mut self) {
+        self.valid = false;
+        self.info.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for ChallengeCreateResponse {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ChallengeCreateResponse {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct ChallengeReplyRequest {
+    // message fields
+    pub session_key: ::std::string::String,
+    pub pub_key_enc: ::std::string::String,
+    pub session_key_sign: ::std::string::String,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a ChallengeReplyRequest {
+    fn default() -> &'a ChallengeReplyRequest {
+        <ChallengeReplyRequest as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ChallengeReplyRequest {
+    pub fn new() -> ChallengeReplyRequest {
+        ::std::default::Default::default()
+    }
+
+    // string session_key = 1;
+
+
+    pub fn get_session_key(&self) -> &str {
+        &self.session_key
+    }
+    pub fn clear_session_key(&mut self) {
+        self.session_key.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_session_key(&mut self, v: ::std::string::String) {
+        self.session_key = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_session_key(&mut self) -> &mut ::std::string::String {
+        &mut self.session_key
+    }
+
+    // Take field
+    pub fn take_session_key(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.session_key, ::std::string::String::new())
+    }
+
+    // string pub_key_enc = 2;
+
+
+    pub fn get_pub_key_enc(&self) -> &str {
+        &self.pub_key_enc
+    }
+    pub fn clear_pub_key_enc(&mut self) {
+        self.pub_key_enc.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_pub_key_enc(&mut self, v: ::std::string::String) {
+        self.pub_key_enc = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_pub_key_enc(&mut self) -> &mut ::std::string::String {
+        &mut self.pub_key_enc
+    }
+
+    // Take field
+    pub fn take_pub_key_enc(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.pub_key_enc, ::std::string::String::new())
+    }
+
+    // string session_key_sign = 3;
+
+
+    pub fn get_session_key_sign(&self) -> &str {
+        &self.session_key_sign
+    }
+    pub fn clear_session_key_sign(&mut self) {
+        self.session_key_sign.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_session_key_sign(&mut self, v: ::std::string::String) {
+        self.session_key_sign = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_session_key_sign(&mut self) -> &mut ::std::string::String {
+        &mut self.session_key_sign
+    }
+
+    // Take field
+    pub fn take_session_key_sign(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.session_key_sign, ::std::string::String::new())
+    }
+}
+
+impl ::protobuf::Message for ChallengeReplyRequest {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.session_key)?;
+                },
+                2 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.pub_key_enc)?;
+                },
+                3 => {
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.session_key_sign)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if !self.session_key.is_empty() {
+            my_size += ::protobuf::rt::string_size(1, &self.session_key);
+        }
+        if !self.pub_key_enc.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.pub_key_enc);
+        }
+        if !self.session_key_sign.is_empty() {
+            my_size += ::protobuf::rt::string_size(3, &self.session_key_sign);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if !self.session_key.is_empty() {
+            os.write_string(1, &self.session_key)?;
+        }
+        if !self.pub_key_enc.is_empty() {
+            os.write_string(2, &self.pub_key_enc)?;
+        }
+        if !self.session_key_sign.is_empty() {
+            os.write_string(3, &self.session_key_sign)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> ChallengeReplyRequest {
+        ChallengeReplyRequest::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "session_key",
+                |m: &ChallengeReplyRequest| { &m.session_key },
+                |m: &mut ChallengeReplyRequest| { &mut m.session_key },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "pub_key_enc",
+                |m: &ChallengeReplyRequest| { &m.pub_key_enc },
+                |m: &mut ChallengeReplyRequest| { &mut m.pub_key_enc },
+            ));
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
+                "session_key_sign",
+                |m: &ChallengeReplyRequest| { &m.session_key_sign },
+                |m: &mut ChallengeReplyRequest| { &mut m.session_key_sign },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<ChallengeReplyRequest>(
+                "ChallengeReplyRequest",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static ChallengeReplyRequest {
+        static instance: ::protobuf::rt::LazyV2<ChallengeReplyRequest> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(ChallengeReplyRequest::new)
+    }
+}
+
+impl ::protobuf::Clear for ChallengeReplyRequest {
+    fn clear(&mut self) {
+        self.session_key.clear();
+        self.pub_key_enc.clear();
+        self.session_key_sign.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for ChallengeReplyRequest {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ChallengeReplyRequest {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct ChallengeReplyResponse {
+    // message fields
+    pub valid: bool,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a ChallengeReplyResponse {
+    fn default() -> &'a ChallengeReplyResponse {
+        <ChallengeReplyResponse as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ChallengeReplyResponse {
+    pub fn new() -> ChallengeReplyResponse {
+        ::std::default::Default::default()
+    }
+
+    // bool valid = 1;
+
+
+    pub fn get_valid(&self) -> bool {
+        self.valid
+    }
+    pub fn clear_valid(&mut self) {
+        self.valid = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_valid(&mut self, v: bool) {
+        self.valid = v;
+    }
+}
+
+impl ::protobuf::Message for ChallengeReplyResponse {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.valid = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.valid != false {
+            my_size += 2;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::ProtobufResult<()> {
+        if self.valid != false {
+            os.write_bool(1, self.valid)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &dyn (::std::any::Any) {
+        self as &dyn (::std::any::Any)
+    }
+    fn as_any_mut(&mut self) -> &mut dyn (::std::any::Any) {
+        self as &mut dyn (::std::any::Any)
+    }
+    fn into_any(self: ::std::boxed::Box<Self>) -> ::std::boxed::Box<dyn (::std::any::Any)> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> ChallengeReplyResponse {
+        ChallengeReplyResponse::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::LazyV2<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::LazyV2::INIT;
+        descriptor.get(|| {
+            let mut fields = ::std::vec::Vec::new();
+            fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                "valid",
+                |m: &ChallengeReplyResponse| { &m.valid },
+                |m: &mut ChallengeReplyResponse| { &mut m.valid },
+            ));
+            ::protobuf::reflect::MessageDescriptor::new_pb_name::<ChallengeReplyResponse>(
+                "ChallengeReplyResponse",
+                fields,
+                file_descriptor_proto()
+            )
+        })
+    }
+
+    fn default_instance() -> &'static ChallengeReplyResponse {
+        static instance: ::protobuf::rt::LazyV2<ChallengeReplyResponse> = ::protobuf::rt::LazyV2::INIT;
+        instance.get(ChallengeReplyResponse::new)
+    }
+}
+
+impl ::protobuf::Clear for ChallengeReplyResponse {
+    fn clear(&mut self) {
+        self.valid = false;
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for ChallengeReplyResponse {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ChallengeReplyResponse {
+    fn as_ref(&self) -> ::protobuf::reflect::ReflectValueRef {
+        ::protobuf::reflect::ReflectValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct PoHRootCertificates {
     // message fields
     pub rc: ::protobuf::RepeatedField<PoHRootCertificate>,
@@ -911,11 +1778,24 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     _sig\x18\x04\x20\x01(\tR\x06msgSig\"]\n\x12InitializeResponse\x12\x10\n\
     \x03msg\x18\x01\x20\x01(\tR\x03msg\x12\x14\n\x05valid\x18\x02\x20\x01(\
     \x08R\x05valid\x12\x1f\n\x0bsession_key\x18\x03\x20\x01(\tR\nsessionKey\
-    \">\n\x13PoHRootCertificates\x12'\n\x02rc\x18\x01\x20\x03(\x0b2\x17.poh.\
-    PoHRootCertificateR\x02rc\"J\n\x12PoHRootCertificate\x12\x1d\n\npublic_k\
-    ey\x18\x01\x20\x01(\tR\tpublicKey\x12\x15\n\x06era_id\x18\x02\x20\x01(\
-    \x05R\x05eraId2D\n\x03PoH\x12=\n\ninitialize\x12\x16.poh.InitializeReque\
-    st\x1a\x17.poh.InitializeResponseb\x06proto3\
+    \"\x9a\x01\n\x16ChallengeCreateRequest\x12\x1f\n\x0bsession_key\x18\x01\
+    \x20\x01(\tR\nsessionKey\x12\x20\n\x0cpub_hash_enc\x18\x02\x20\x01(\tR\n\
+    pubHashEnc\x12\x17\n\x07pub_enc\x18\x03\x20\x01(\tR\x06pubEnc\x12$\n\x0e\
+    valid_time_sec\x18\x04\x20\x01(\x04R\x0cvalidTimeSec\"C\n\x17ChallengeCr\
+    eateResponse\x12\x14\n\x05valid\x18\x01\x20\x01(\x08R\x05valid\x12\x12\n\
+    \x04info\x18\x02\x20\x01(\tR\x04info\"\x82\x01\n\x15ChallengeReplyReques\
+    t\x12\x1f\n\x0bsession_key\x18\x01\x20\x01(\tR\nsessionKey\x12\x1e\n\x0b\
+    pub_key_enc\x18\x02\x20\x01(\tR\tpubKeyEnc\x12(\n\x10session_key_sign\
+    \x18\x03\x20\x01(\tR\x0esessionKeySign\".\n\x16ChallengeReplyResponse\
+    \x12\x14\n\x05valid\x18\x01\x20\x01(\x08R\x05valid\">\n\x13PoHRootCertif\
+    icates\x12'\n\x02rc\x18\x01\x20\x03(\x0b2\x17.poh.PoHRootCertificateR\
+    \x02rc\"J\n\x12PoHRootCertificate\x12\x1d\n\npublic_key\x18\x01\x20\x01(\
+    \tR\tpublicKey\x12\x15\n\x06era_id\x18\x02\x20\x01(\x05R\x05eraId2\xdf\
+    \x01\n\x03PoH\x12=\n\ninitialize\x12\x16.poh.InitializeRequest\x1a\x17.p\
+    oh.InitializeResponse\x12M\n\x10challenge_create\x12\x1b.poh.ChallengeCr\
+    eateRequest\x1a\x1c.poh.ChallengeCreateResponse\x12J\n\x0fchallenge_repl\
+    y\x12\x1a.poh.ChallengeReplyRequest\x1a\x1b.poh.ChallengeReplyResponseb\
+    \x06proto3\
 ";
 
 static file_descriptor_proto_lazy: ::protobuf::rt::LazyV2<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::rt::LazyV2::INIT;

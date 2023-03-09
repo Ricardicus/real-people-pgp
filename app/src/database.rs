@@ -1,6 +1,5 @@
 use std::env;
 
-
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -11,8 +10,6 @@ extern crate rpassword;
 mod keys;
 use clap::Parser;
 use keys::{Database, DatabaseEntry};
-
-
 
 extern crate getopts;
 use getopts::Options;

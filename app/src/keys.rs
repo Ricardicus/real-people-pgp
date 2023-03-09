@@ -1,5 +1,6 @@
 extern crate rand;
 extern crate secp256k1;
+
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 
@@ -13,7 +14,7 @@ use sha2::{Digest, Sha256};
 use rmp_serde::Serializer;
 use serde::Serialize;
 use std::path::Path;
-use std::str::{from_utf8, FromStr};
+use std::str::FromStr;
 
 use crypto::buffer::ReadBuffer;
 use crypto::buffer::{BufferResult, RefReadBuffer, RefWriteBuffer, WriteBuffer};
@@ -26,6 +27,10 @@ use std::io::{Read, Write};
 use chrono::offset::Local;
 use std::collections::HashMap;
 
+#[allow(unused_imports)]
+#[allow(dead_code)]
+
+#[derive(Clone)]
 pub struct KeyMaster {
     pub secp: Secp256k1<All>,
     pub public_key: String,
@@ -417,11 +422,13 @@ pub fn secp256k1_encrypt(pk: &str, msg: &str) -> String {
     let enc_vec: &[u8] = &encrypt(pk_vec, msg_vec).unwrap();
     return hex::encode(enc_vec);
 }
-pub fn secp256k1_decrypt(sk: &str, msg: &str) -> String {
-    let sk_vec: &[u8] = &hex::decode(sk).unwrap();
-    let msg_vec: &[u8] = &hex::decode(msg).unwrap();
-    let enc_vec: &[u8] = &decrypt(sk_vec, msg_vec).unwrap();
-    return from_utf8(enc_vec).unwrap().to_string();
+
+pub fn secp256k1_decrypt(sk: &str, msg: &str) -> Result<String, &'static str> {
+    let sk_vec = hex::decode(sk).map_err(|_| "decryption failed")?;
+    let msg_vec = hex::decode(msg).map_err(|_| "decryption failed")?;
+    let enc_vec = decrypt(&sk_vec, &msg_vec).map_err(|_| "decryption failed")?;
+    let enc_str = String::from_utf8(enc_vec).map_err(|_| "decryption failed")?;
+    Ok(enc_str)
 }
 
 /* sha256 */
