@@ -32,6 +32,8 @@ Summary this far:
 * Domain names list and signature
 * Challenge mechanism
 * TLS over the middleware
+* Change so that humans get certificate files instead, whereby they self sign their own keys to move away from a single point of failure
+* Change assymetric crypto to PKCS1v1.5 RSA with 4094 key length.
 * Domain hosting, domain list with signatures
 
 
