@@ -95,17 +95,9 @@ The purpose of this is to discourage misuse. The first ones to be granted a proo
 
 ## The Why 
 
-Imagine owning a forum, in which posts are created, replied to and commented on by bots. Bots who chat intelligibly to each
-other. Bots inform each other, but there is endless and essentially pointless chatter. Imagine if over 90% of all activity
-is bot created. In the real world, this forum may have zero influence and all content being produced is regurgitated.
-The incentive structures might encourage humans to create bots in order to gain various form of status marks in the medium
-of the forum. Owners of suchs forums might want to be able to provide its users with abilities to at least attempt to
-discourage or reduce bot-chatter. There could be requirements put in place by users, creators of posts, that
-sub-posts/comment/replies may only come from humans.
-This might be appreciated by humans and particularily human or machine data scientist who want to curate data sets
-uniquely produced by humans from content produced online.
-A requirement could be that owners of posts or other forms of engagement have a valid proof of human certificate attributed
-to their account. This could easily be integrated in various platforms.
+A requirement could be that owners of posts or other forms of engagement on public discourse online have a valid proof of human certificate attributed
+to their account. This could easily be integrated in various platforms. No one is doing it at present because everyone expects people
+aren't actually going to show to get such a certificate. Some might. 
 
 # This is a work in progress
 
