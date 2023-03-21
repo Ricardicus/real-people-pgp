@@ -35,7 +35,7 @@ We expect bots to have a impression in reality that differs a lot from the impre
 in reality. As long as machines aren't built by a biology that resembles ours, we expect this to be true.
 Reality is today still the domain in which not much is new under the sun. We expect this to hold true
 for this coming century. It is indeed the virtual realm that has undergone a massively disrupting change.
-In the current state of affairs; humans can use reality as a point of advantage in order to establish a
+In the current state of affairs; humans can use reality in order to establish a
 sense of trust that can be easilty transferred to the digital realm. This is an initiave to do so.
 
 ## Degins notes on Proof of Human 
