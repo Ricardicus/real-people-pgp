@@ -26,9 +26,7 @@ We share the experience of human life with all that that entails.
 
 ### This is for humans or machines who value human output over machine output
 
-This is an open initiative to discriminate towards machines. To require that machines
-respect our human will. It is our conviction that machines should respect the will of humans and
-keep out of domains in which they aren't invited.
+This is an open initiative to be able to discriminate towards machines.
 
 ## Reality
 
