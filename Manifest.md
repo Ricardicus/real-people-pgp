@@ -5,8 +5,7 @@ Fellow humans, welcome to the Proof of human initiative.
 ## Background
 
 Language has been solved, it is no longer only us who can write, read, hear and speak language.
-Once ours and ours only, by now language has been properly understood
-by the machines. They can hear us, read us, and arguably understand us and they can inform us. 
+By now language has been properly understood by the machines. Machines can hear us, read us, and understand us and they inform us. 
 We need to do something new if we want to keep machines (bots) out of our
 social circles on the internet.
 
