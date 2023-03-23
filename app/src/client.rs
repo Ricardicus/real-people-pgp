@@ -37,6 +37,8 @@ enum Response {
 #[derive(Clone)]
 struct Session {
     session_key: String,
+    session_key_enc: String,
+    session_key_enc_hash: String,
     keys: KeyMaster,
     responses: Vec<Response>,
 }
@@ -63,9 +65,12 @@ impl Client {
             .join_metadata_result()
             .await?;
 
-        let session_key = &resp.1.session_key.to_string();
+        let session_key_enc = &resp.1.session_key_enc.to_string();
+        let session_key = rsa_decrypt(&self.keymaster.secret_key, &session_key_enc).expect("Response from server invalid");
         let mut session = Session {
             session_key: session_key.to_string(),
+            session_key_enc: session_key_enc.clone(),
+            session_key_enc_hash: hash_string(session_key_enc),
             responses: Vec::<Response>::new(),
             keys: keys,
         };
@@ -101,7 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Response::InitializeResponse(InitializeResponse {
                 msg,
                 valid,
-                session_key,
+                session_key_enc: _,
                 ..
             }) => {
                 let session_key = response.session_key.clone();

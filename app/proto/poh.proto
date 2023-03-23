@@ -23,7 +23,7 @@ syntax = "proto3";
  message InitializeResponse {
    string msg = 1;
    bool valid = 2;
-   string session_key = 3;
+   string session_key_enc = 3;
  }
 
  message ChallengeCreateRequest {

@@ -229,7 +229,7 @@ pub struct InitializeResponse {
     // message fields
     pub msg: ::std::string::String,
     pub valid: bool,
-    pub session_key: ::std::string::String,
+    pub session_key_enc: ::std::string::String,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -287,30 +287,30 @@ impl InitializeResponse {
         self.valid = v;
     }
 
-    // string session_key = 3;
+    // string session_key_enc = 3;
 
 
-    pub fn get_session_key(&self) -> &str {
-        &self.session_key
+    pub fn get_session_key_enc(&self) -> &str {
+        &self.session_key_enc
     }
-    pub fn clear_session_key(&mut self) {
-        self.session_key.clear();
+    pub fn clear_session_key_enc(&mut self) {
+        self.session_key_enc.clear();
     }
 
     // Param is passed by value, moved
-    pub fn set_session_key(&mut self, v: ::std::string::String) {
-        self.session_key = v;
+    pub fn set_session_key_enc(&mut self, v: ::std::string::String) {
+        self.session_key_enc = v;
     }
 
     // Mutable pointer to the field.
     // If field is not initialized, it is initialized with default value first.
-    pub fn mut_session_key(&mut self) -> &mut ::std::string::String {
-        &mut self.session_key
+    pub fn mut_session_key_enc(&mut self) -> &mut ::std::string::String {
+        &mut self.session_key_enc
     }
 
     // Take field
-    pub fn take_session_key(&mut self) -> ::std::string::String {
-        ::std::mem::replace(&mut self.session_key, ::std::string::String::new())
+    pub fn take_session_key_enc(&mut self) -> ::std::string::String {
+        ::std::mem::replace(&mut self.session_key_enc, ::std::string::String::new())
     }
 }
 
@@ -334,7 +334,7 @@ impl ::protobuf::Message for InitializeResponse {
                     self.valid = tmp;
                 },
                 3 => {
-                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.session_key)?;
+                    ::protobuf::rt::read_singular_proto3_string_into(wire_type, is, &mut self.session_key_enc)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -354,8 +354,8 @@ impl ::protobuf::Message for InitializeResponse {
         if self.valid != false {
             my_size += 2;
         }
-        if !self.session_key.is_empty() {
-            my_size += ::protobuf::rt::string_size(3, &self.session_key);
+        if !self.session_key_enc.is_empty() {
+            my_size += ::protobuf::rt::string_size(3, &self.session_key_enc);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -369,8 +369,8 @@ impl ::protobuf::Message for InitializeResponse {
         if self.valid != false {
             os.write_bool(2, self.valid)?;
         }
-        if !self.session_key.is_empty() {
-            os.write_string(3, &self.session_key)?;
+        if !self.session_key_enc.is_empty() {
+            os.write_string(3, &self.session_key_enc)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -421,9 +421,9 @@ impl ::protobuf::Message for InitializeResponse {
                 |m: &mut InitializeResponse| { &mut m.valid },
             ));
             fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeString>(
-                "session_key",
-                |m: &InitializeResponse| { &m.session_key },
-                |m: &mut InitializeResponse| { &mut m.session_key },
+                "session_key_enc",
+                |m: &InitializeResponse| { &m.session_key_enc },
+                |m: &mut InitializeResponse| { &mut m.session_key_enc },
             ));
             ::protobuf::reflect::MessageDescriptor::new_pb_name::<InitializeResponse>(
                 "InitializeResponse",
@@ -443,7 +443,7 @@ impl ::protobuf::Clear for InitializeResponse {
     fn clear(&mut self) {
         self.msg.clear();
         self.valid = false;
-        self.session_key.clear();
+        self.session_key_enc.clear();
         self.unknown_fields.clear();
     }
 }
@@ -1648,10 +1648,10 @@ impl ::protobuf::reflect::ProtobufValue for PoHRootCertificate {
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x0fproto/poh.proto\x12\x03poh\"@\n\x11InitializeRequest\x12\x17\n\x07\
     pub_key\x18\x01\x20\x01(\tR\x06pubKey\x12\x12\n\x04cert\x18\x02\x20\x01(\
-    \tR\x04cert\"]\n\x12InitializeResponse\x12\x10\n\x03msg\x18\x01\x20\x01(\
-    \tR\x03msg\x12\x14\n\x05valid\x18\x02\x20\x01(\x08R\x05valid\x12\x1f\n\
-    \x0bsession_key\x18\x03\x20\x01(\tR\nsessionKey\"\x9a\x01\n\x16Challenge\
-    CreateRequest\x12\x1f\n\x0bsession_key\x18\x01\x20\x01(\tR\nsessionKey\
+    \tR\x04cert\"d\n\x12InitializeResponse\x12\x10\n\x03msg\x18\x01\x20\x01(\
+    \tR\x03msg\x12\x14\n\x05valid\x18\x02\x20\x01(\x08R\x05valid\x12&\n\x0fs\
+    ession_key_enc\x18\x03\x20\x01(\tR\rsessionKeyEnc\"\x9a\x01\n\x16Challen\
+    geCreateRequest\x12\x1f\n\x0bsession_key\x18\x01\x20\x01(\tR\nsessionKey\
     \x12\x20\n\x0cpub_hash_enc\x18\x02\x20\x01(\tR\npubHashEnc\x12\x17\n\x07\
     pub_enc\x18\x03\x20\x01(\tR\x06pubEnc\x12$\n\x0evalid_time_sec\x18\x04\
     \x20\x01(\x04R\x0cvalidTimeSec\"C\n\x17ChallengeCreateResponse\x12\x14\n\

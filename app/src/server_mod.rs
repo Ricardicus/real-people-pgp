@@ -1,7 +1,7 @@
 use crate::keys;
-use std::time::Instant;
-
+use keys::{hash_string, rsa_encrypt};
 use std::collections::HashMap;
+use std::time::Instant;
 
 pub enum SessionState {
     Initialize,
@@ -31,6 +31,23 @@ pub enum RequestData {
 pub struct ProcessResult {
     pub msg: String,
     pub session_key: String,
+    pub session_key_enc: String
+}
+
+fn generate_session_key() -> String {
+    use rand::Rng;
+    const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                            abcdefghijklmnopqrstuvwxyz\
+                            0123456789)(*&^%$#@!~";
+    let session_key_len: usize = 48;
+    let mut rng = rand::thread_rng();
+
+    (0..session_key_len)
+        .map(|_| {
+            let idx = rng.gen_range(0..CHARSET.len());
+            CHARSET[idx] as char
+        })
+        .collect()
 }
 
 pub fn process(
@@ -44,19 +61,14 @@ pub fn process(
             let sessions = sessions.unwrap();
             match request_data.unwrap() {
                 RequestData::Session(s) => {
-                    let key = s.client_pub_key.to_string();
-                    if sessions.contains_key(&key.to_string()) {
-                        Ok(ProcessResult {
-                            session_key: key,
-                            msg: "Session has already been initialized".to_string(),
-                        })
-                    } else {
-                        sessions.insert(key.to_string(), s);
-                        Ok(ProcessResult {
-                            session_key: key,
-                            msg: "Initialized a new session".to_string(),
-                        })
-                    }
+                    let key = generate_session_key();
+                    let key_enc = rsa_encrypt(&s.client_pub_key, &key);
+                    sessions.insert(hash_string(&key_enc.to_string()), s);
+                    Ok(ProcessResult {
+                        session_key: key,
+                        session_key_enc: key_enc,
+                        msg: "Initialized a new session".to_string(),
+                    })
                 }
                 _ => Err("Invalid arguments"),
             }
@@ -68,7 +80,8 @@ pub fn process(
                         .unwrap()
                         .insert(challenge.pub_hash.to_string(), challenge);
                     return Ok(ProcessResult {
-                        session_key: "".to_string(),
+                        session_key: "".to_string(),     // todo
+                        session_key_enc: "".to_string(), // not yet implemeted
                         msg: "Challenge created".to_string(),
                     });
                 }

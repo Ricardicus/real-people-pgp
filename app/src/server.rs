@@ -91,7 +91,7 @@ impl PoH for MyPoH {
             let res: ProcessResult =
                 process(Some(map), None, SessionState::Initialize, Some(data)).unwrap();
             r.set_msg(res.msg);
-            r.set_session_key(res.session_key.to_string());
+            r.set_session_key_enc(res.session_key_enc.to_string());
             println!(
                 "Created session {}, {}",
                 res.session_key,
