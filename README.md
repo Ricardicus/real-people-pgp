@@ -23,7 +23,7 @@ Summary this far:
   * The idea is to make it possible to host multiple of these servers
   * A rootcert as well as a database file is required to make the server and client programs work in accordance with the idea of this project.
 * The database isn't peer to peer, it is here.
-  * Clients use a list of domain names for hosts that is provided here.
+* Clients use a list of domain names for hosts that is provided here, but localhost should work if the server is running and you have the latest version on it (which might be hard to guarantee, but things move slow).
 * Only servers need a database
 * Clients use a list of domain names provided here. 
 
@@ -33,7 +33,6 @@ Summary this far:
 * Challenge mechanism
 * TLS over the middleware
 * Change so that humans get certificate files instead, whereby they self sign their own keys to move away from a single point of failure
-* Change assymetric crypto to PKCS1v1.5 RSA with 4094 key length.
 * Domain hosting, domain list with signatures
 
 
