@@ -17,8 +17,6 @@ syntax = "proto3";
  message InitializeRequest {
    string pub_key = 1;
    string cert = 2;
-   string msg = 3;
-   string msg_sig = 4;
  }
 
  // return value
@@ -42,8 +40,7 @@ syntax = "proto3";
 
  message ChallengeReplyRequest {
    string session_key = 1;
-   string pub_key_enc = 2;
-   string session_key_sign = 3;
+   string pub_key_enc = 2; 
  }
 
  message ChallengeReplyResponse {

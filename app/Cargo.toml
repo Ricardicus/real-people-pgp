@@ -35,15 +35,13 @@ path="./src/database.rs"
 
 
 [dependencies]
-protobuf        = "2"
-httpbis         = { git = "https://github.com/stepancheg/rust-http2" }
+protobuf = "2"
+httpbis = { git = "https://github.com/stepancheg/rust-http2" }
 grpc ="*"
 grpc-protobuf="*"
 tokio = { version = "1.12.0", features = ["full"] } # for our async runtime    
-rand = "0.6"
 bitcoin_hashes = "0.10.0"
 rust-crypto = "0.2"
-sha2 = "0.9.8"
 rmp-serde = "1.1.1"
 serde = "1.0.152"
 serde_derive = "1.0.152"
@@ -53,10 +51,16 @@ getopts = "0.2"
 rpassword = "0.0.4"
 ecies = {version = "0.2", default-features = false, features = ["pure"]}
 hex = "0.4"
+rsa =  { version = "0.8.2", features = ["serde", "sha2"] }
+rand = "0.8.5"
+sha2 = { version = "0.10.6", optional = true, default-features = false, features = ["oid"] }
 
-[dependencies.secp256k1]
-features = ["rand", "bitcoin_hashes"]
-version = "0.20.0"
 
 [build-dependencies]
 protoc-rust-grpc = "0.8.2"
+
+[profile.dev]
+opt-level = 3
+
+[profile.dev.package.num-bigint-dig]
+opt-level = 3

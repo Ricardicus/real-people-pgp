@@ -1,5 +1,5 @@
 mod keys;
-use keys::{hash_string, secp256k1_decrypt, Database, KeyMaster, RootCerts};
+use keys::{hash_string, rsa_decrypt, rsa_encrypt, Database, KeyMaster, RootCerts};
 
 use grpc::{ServerHandlerContext, ServerRequestSingle, ServerResponseUnarySink};
 use std::sync::{Arc, Mutex};
@@ -16,18 +16,17 @@ use chrono::offset::Local;
 use std::collections::HashMap;
 
 mod server_mod;
-use server_mod::{Challenge, RequestData, Session, SessionState};
+use server_mod::{process, Challenge, ProcessResult, RequestData, Session, SessionState};
 
 #[allow(dead_code)]
 
 impl Session {
     pub fn new(public_key: &str) -> Self {
         Session {
-            keys: KeyMaster::new(None),
             state: SessionState::Initialize,
             valid_seconds: 60 * 5, // By default, 5 minutes
             time: Instant::now(),
-            key_initialized: public_key.to_string(),
+            client_pub_key: public_key.to_string(),
         }
     }
 }
@@ -40,54 +39,6 @@ struct MyPoH {
     challenges: Arc<Mutex<HashMap<String, Challenge>>>,
 }
 
-struct ProcessResult {
-    msg: String,
-    session_key: String,
-}
-
-fn process(
-    sessions: Option<&mut HashMap<String, Session>>,
-    challenges: Option<&mut HashMap<String, Challenge>>,
-    public_key: &str,
-    state: SessionState,
-    request_data: Option<RequestData>,
-) -> Result<ProcessResult, &'static str> {
-    match state {
-        SessionState::Initialize => {
-            let sessions = sessions.unwrap();
-            let s = Session::new(public_key);
-            let key = s.keys.public_key.to_string();
-            sessions.insert(key.to_string(), s);
-            Ok(ProcessResult {
-                session_key: key,
-                msg: "Initialized a new session".to_string(),
-            })
-        }
-        SessionState::ChallengeCreate => {
-            let challenges = challenges.unwrap();
-            let public_key_hash = public_key; // It is given as a hash
-            if challenges.contains_key(public_key_hash) {
-                Ok(ProcessResult {
-                    session_key: "".to_string(),
-                    msg: "Challenge already created".to_string(),
-                })
-            } else {
-                match request_data.unwrap() {
-                    RequestData::Challenge(challenge) => {
-                        challenges.insert(public_key_hash.to_string(), challenge);
-                        return Ok(ProcessResult {
-                            session_key: "".to_string(),
-                            msg: "Challenge created".to_string(),
-                        });
-                    }
-                    _other => return Err("Failed to create challenge"),
-                };
-            }
-        }
-        SessionState::ChallengeReply => Err("Not implemented yet"),
-    }
-}
-
 impl PoH for MyPoH {
     // rpc for service
     fn initialize(
@@ -98,8 +49,6 @@ impl PoH for MyPoH {
     ) -> grpc::Result<()> {
         // create Response
         let mut r = InitializeResponse::new();
-        let msg = req.message.get_msg();
-        let msg_signature = req.message.get_msg_sig();
         let cert = req.message.get_cert();
         let pub_key = req.message.get_pub_key();
         let mut valid: bool = false;
@@ -112,15 +61,11 @@ impl PoH for MyPoH {
             {
                 valid = true;
                 cert_issuer = rootcert.issuer.clone();
-            }
-        }
-
-        if valid {
-            valid =
-                self.keymaster
-                    .verify_with_public_key(&pub_key, &hash_string(msg), msg_signature);
-            if !valid {
-                println!("Message signature didn't match");
+            } else {
+                println!(
+                    "rootcert public key: {}, client pub_key: {}, client cert: {}",
+                    rootcert.public_key, pub_key, cert
+                );
             }
         }
 
@@ -134,17 +79,19 @@ impl PoH for MyPoH {
             valid = false;
         }
 
-        println!("Received message {}, valid: {}", msg, valid);
+        println!("Initiailization attempt valid: {}", valid);
         r.set_valid(valid);
         r.set_msg("Checked client validity".to_string());
 
         if valid {
             let access = self.sessions.clone();
             let map: &mut HashMap<String, Session> = &mut access.lock().unwrap();
+            let session = Session::new(pub_key);
+            let data: RequestData = RequestData::Session(session);
             let res: ProcessResult =
-                process(Some(map), None, &pub_key, SessionState::Initialize, None).unwrap();
-            r.set_session_key(res.session_key.to_string());
+                process(Some(map), None, SessionState::Initialize, Some(data)).unwrap();
             r.set_msg(res.msg);
+            r.set_session_key(res.session_key.to_string());
             println!(
                 "Created session {}, {}",
                 res.session_key,
@@ -164,53 +111,9 @@ impl PoH for MyPoH {
     ) -> grpc::Result<()> {
         // create Response
         let mut r = ChallengeCreateResponse::new();
-        let session_key = req.message.get_session_key();
+        let _session_key = req.message.get_session_key();
         r.set_valid(false);
-
-        let access = self.sessions.clone();
-        let map: &mut HashMap<String, Session> = &mut access.lock().unwrap();
-
-        if map.contains_key(session_key) {
-            let session = map.get(session_key).unwrap();
-            let access = self.challenges.clone();
-            let challenges: &mut HashMap<String, Challenge> = &mut access.lock().unwrap();
-            let pub_hash_enc = req.message.get_pub_hash_enc();
-            let pub_hash_key =
-                secp256k1_decrypt(&session.keys.secret_key.to_string(), pub_hash_enc);
-            if pub_hash_key.is_ok() {
-                let pub_hash_key = pub_hash_key.unwrap();
-                let data: RequestData = RequestData::Challenge(Challenge {
-                    pub_hash: pub_hash_key.to_string(),
-                    session_key: session_key.to_string(),
-                    valid_seconds: req.message.get_valid_time_sec(),
-                    time: Instant::now(),
-                });
-                if process(
-                    Some(map),
-                    Some(challenges),
-                    &pub_hash_key.as_ref(),
-                    SessionState::ChallengeCreate,
-                    Some(data),
-                )
-                .is_ok()
-                {
-                    r.set_valid(true);
-                    r.set_info("challenge created".to_string());
-                    println!(
-                        "Challenge created {} {}",
-                        pub_hash_key,
-                        Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
-                    );
-                } else {
-                    println!("Failed attempt at creating a challenge");
-                    r.set_info("Failed to create challenge".to_string());
-                }
-            } else {
-                println!("Decryption failed..");
-            }
-        } else {
-            println!("Invalid session key {}", session_key);
-        }
+        r.set_info("not implemented yet".to_string());
         resp.finish(r)
     }
 

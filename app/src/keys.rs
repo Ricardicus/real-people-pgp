@@ -1,18 +1,16 @@
 extern crate rand;
-extern crate secp256k1;
 
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 
-use secp256k1::bitcoin_hashes::sha256;
-use secp256k1::rand::rngs::OsRng;
-use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey, Signature};
-
-use serde_derive::Deserialize;
-use sha2::{Digest, Sha256};
+use rsa::pkcs1v15::{Signature, SigningKey, VerifyingKey};
+use rsa::sha2::{Digest, Sha256};
+use rsa::signature::{Keypair, RandomizedSigner, SignatureEncoding, Verifier};
+use rsa::{Pkcs1v15Encrypt, PublicKey, RsaPrivateKey, RsaPublicKey};
+use serde::{Deserialize, Serialize};
 
 use rmp_serde::Serializer;
-use serde::Serialize;
+use std::convert::TryFrom;
 use std::path::Path;
 use std::str::FromStr;
 
@@ -20,19 +18,17 @@ use crypto::buffer::ReadBuffer;
 use crypto::buffer::{BufferResult, RefReadBuffer, RefWriteBuffer, WriteBuffer};
 use crypto::rc4::Rc4;
 use crypto::symmetriccipher::{Decryptor, Encryptor};
-use ecies::{decrypt, encrypt};
 use std::fs::{create_dir_all, File};
 use std::io::{Read, Write};
 
 use chrono::offset::Local;
 use std::collections::HashMap;
+use std::str;
 
 #[allow(unused_imports)]
 #[allow(dead_code)]
-
 #[derive(Clone)]
 pub struct KeyMaster {
-    pub secp: Secp256k1<All>,
     pub public_key: String,
     pub secret_key: String,
     pub passphrase: String,
@@ -80,12 +76,25 @@ pub struct Database {
 /* Keymaster holds the keys */
 impl KeyMaster {
     pub fn new(passphrase: Option<&str>) -> Self {
-        let secp = Secp256k1::new();
-        let mut rng = OsRng::new().expect("OsRng");
-        let secret_key = SecretKey::new(&mut rng);
-        let public_key = PublicKey::from_secret_key(&secp, &secret_key);
+        let mut rng = rand::thread_rng();
+
+        let bits = 4096;
+        let secret_key = RsaPrivateKey::new(&mut rng, bits).expect("failed to generate a key");
+        let public_key = RsaPublicKey::from(&secret_key);
+
+        let mut buf = Vec::new();
+        public_key
+            .serialize(&mut Serializer::new(&mut buf))
+            .unwrap();
+        let public_key = hex::encode(&buf);
+
+        let mut buf = Vec::new();
+        secret_key
+            .serialize(&mut Serializer::new(&mut buf))
+            .unwrap();
+        let secret_key = hex::encode(&buf);
+
         Self {
-            secp: secp,
             secret_key: secret_key.to_string(),
             public_key: public_key.to_string(),
             passphrase: passphrase.unwrap_or("Default passphrase").to_string(),
@@ -94,50 +103,51 @@ impl KeyMaster {
 
     /* To start it from already generated values */
     pub fn holding_these(&mut self, secret_key: &str, public_key: &str) {
-        let secp = Secp256k1::new();
-        let secret_key = SecretKey::from_str(secret_key).expect("Invalid secret key");
-        let public_key = PublicKey::from_str(public_key).expect("Invalid public key");
-        self.secp = secp;
+        let buf = hex::decode(secret_key).unwrap();
+        let secret_key_check: RsaPrivateKey =
+            rmp_serde::from_slice(&buf).expect("Invalid secret key");
+
+        let buf = hex::decode(public_key).unwrap();
+        let public_key_check: RsaPublicKey =
+            rmp_serde::from_slice(&buf).expect("Invalid public key");
+
         self.secret_key = secret_key.to_string();
         self.public_key = public_key.to_string();
     }
 
     /* Sign a message */
     pub fn sign(&self, message: String) -> String {
-        let message_ = Message::from_hashed_data::<sha256::Hash>(message.as_bytes());
-        return self
-            .secp
-            .sign(
-                &message_,
-                &SecretKey::from_str(&self.secret_key[..]).unwrap(),
-            )
-            .to_string();
+        let message = hash_string(&message);
+        let buf = hex::decode(self.secret_key.clone()).unwrap();
+        let secret_key: RsaPrivateKey = rmp_serde::from_slice(&buf).expect("Invalid secret key");
+
+        let mut rng = rand::thread_rng();
+        let signing_key = SigningKey::<Sha256>::new_with_prefix(secret_key.clone());
+        let signature = signing_key.sign_with_rng(&mut rng, message.as_bytes());
+
+        return hex::encode(signature.to_bytes());
     }
 
     /* Verify a message */
     pub fn verify(&self, message: String, signature: String) -> bool {
-        let message_ = Message::from_hashed_data::<sha256::Hash>(message.as_bytes());
-        return self
-            .secp
-            .verify(
-                &message_,
-                &Signature::from_str(&signature[..]).unwrap(),
-                &PublicKey::from_str(&self.public_key[..]).unwrap(),
-            )
-            .is_ok();
+        let message = hash_string(&message);
+        let signature = Signature::try_from(hex::decode(signature).unwrap().as_slice()).unwrap();
+
+        let buf = hex::decode(self.public_key.clone()).unwrap();
+        let public_key: RsaPublicKey = rmp_serde::from_slice(&buf).expect("Invalid public key");
+        let verifying_key = VerifyingKey::<Sha256>::new_with_prefix(public_key);
+        return verifying_key.verify(message.as_bytes(), &signature).is_ok();
     }
 
     /* Verify a message using another public key */
     pub fn verify_with_public_key(&self, public_key: &str, message: &str, signature: &str) -> bool {
-        let message_ = Message::from_hashed_data::<sha256::Hash>(message.as_bytes());
-        return self
-            .secp
-            .verify(
-                &message_,
-                &Signature::from_str(signature).unwrap(),
-                &PublicKey::from_str(public_key).unwrap(),
-            )
-            .is_ok();
+        let message = hash_string(message);
+        let signature = Signature::try_from(hex::decode(signature).unwrap().as_slice()).unwrap();
+
+        let buf = hex::decode(public_key).unwrap();
+        let public_key: RsaPublicKey = rmp_serde::from_slice(&buf).expect("Invalid public key");
+        let verifying_key = VerifyingKey::<Sha256>::new_with_prefix(public_key);
+        return verifying_key.verify(message.as_bytes(), &signature).is_ok();
     }
 
     /* Generate a certificate, a bundle of a signature and a certificate */
@@ -298,6 +308,11 @@ impl Cert {
         let cert_keys = KeyMaster::new(Some(passphrase));
         let signature: String = keys.sign(cert_keys.public_key.to_string());
 
+        assert!(
+            keys.verify_with_public_key(&keys.public_key, &cert_keys.public_key, &signature),
+            "Key failure"
+        );
+
         create_dir_all(out_dir).expect("Failed to create directory {out_dir}");
 
         let keys_filename = "keys.poh";
@@ -415,20 +430,23 @@ impl Database {
     }
 }
 
-/* Quick and dirty secp encrypt/decrypt */
-pub fn secp256k1_encrypt(pk: &str, msg: &str) -> String {
-    let pk_vec: &[u8] = &hex::decode(pk).unwrap();
-    let msg_vec: &[u8] = &msg.as_bytes();
-    let enc_vec: &[u8] = &encrypt(pk_vec, msg_vec).unwrap();
-    return hex::encode(enc_vec);
+/* Quick and dirty encrypt/decrypt */
+pub fn rsa_encrypt(pk: &str, msg: &str) -> String {
+    let mut rng = rand::thread_rng();
+    let pk: RsaPublicKey = rmp_serde::from_slice(&hex::decode(pk).unwrap()).unwrap();
+    return hex::encode(
+        pk.encrypt(&mut rng, Pkcs1v15Encrypt, msg.as_bytes())
+            .unwrap(),
+    );
 }
 
-pub fn secp256k1_decrypt(sk: &str, msg: &str) -> Result<String, &'static str> {
-    let sk_vec = hex::decode(sk).map_err(|_| "decryption failed")?;
-    let msg_vec = hex::decode(msg).map_err(|_| "decryption failed")?;
-    let enc_vec = decrypt(&sk_vec, &msg_vec).map_err(|_| "decryption failed")?;
-    let enc_str = String::from_utf8(enc_vec).map_err(|_| "decryption failed")?;
-    Ok(enc_str)
+pub fn rsa_decrypt(sk: &str, msg: &str) -> Result<String, &'static str> {
+    let sk: RsaPrivateKey = rmp_serde::from_slice(&hex::decode(sk).unwrap()).unwrap();
+    Ok(String::from_utf8(
+        sk.decrypt(Pkcs1v15Encrypt, &hex::decode(msg).unwrap())
+            .unwrap(),
+    )
+    .unwrap())
 }
 
 /* sha256 */

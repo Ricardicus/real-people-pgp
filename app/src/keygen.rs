@@ -22,6 +22,7 @@ fn main() {
     std::io::stdout().flush().unwrap();
     let passphrase = read_password().unwrap();
 
+    println!("Generating key pair...");
     let keys = KeyMaster::new(Some(passphrase.as_str()));
     let key_pair: KeyPair = KeyPair {
         public_key: keys.public_key.to_string(),
