@@ -30,9 +30,8 @@ Summary this far:
 # Todo
 
 * Domain names list and signature
-* Challenge mechanism
 * TLS over the middleware
-* Change so that humans get certificate files instead, whereby they self sign their own keys to move away from a single point of failure
+* Change so that this is based on OpenPGP instead
 * Domain hosting, domain list with signatures
 
 
