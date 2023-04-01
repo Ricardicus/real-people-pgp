@@ -3,7 +3,8 @@ pohpylib/target
 pohpylib/venv
 
 # Application
-app/target
+*/target
+
 
 # Python dev
 venv
