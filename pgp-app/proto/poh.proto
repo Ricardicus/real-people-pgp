@@ -7,7 +7,7 @@ syntax = "proto3";
  // service which can be executed
  service PoH {
  // function which can be called
-   rpc verify_file_attached_signature (VerifyAttachedSignatureRequest) returns (VerifyResponse);
+   rpc verify_attached_signature (VerifyAttachedSignatureRequest) returns (VerifyResponse);
    rpc verify_detached_signature (VerifyDetachedSignatureRequest) returns (VerifyResponse);
 }
 
@@ -17,7 +17,8 @@ syntax = "proto3";
  }
  // argument
  message VerifyDetachedSignatureRequest {
-   string file_attached_signature = 1;
+   string detached_signature = 1;
+   string file_contents = 2;
  }
 
  // return value

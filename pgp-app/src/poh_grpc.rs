@@ -22,7 +22,7 @@
 // server interface
 
 pub trait PoH {
-    fn verify_file_attached_signature(&self, o: ::grpc::ServerHandlerContext, req: ::grpc::ServerRequestSingle<super::poh::VerifyAttachedSignatureRequest>, resp: ::grpc::ServerResponseUnarySink<super::poh::VerifyResponse>) -> ::grpc::Result<()>;
+    fn verify_attached_signature(&self, o: ::grpc::ServerHandlerContext, req: ::grpc::ServerRequestSingle<super::poh::VerifyAttachedSignatureRequest>, resp: ::grpc::ServerResponseUnarySink<super::poh::VerifyResponse>) -> ::grpc::Result<()>;
 
     fn verify_detached_signature(&self, o: ::grpc::ServerHandlerContext, req: ::grpc::ServerRequestSingle<super::poh::VerifyDetachedSignatureRequest>, resp: ::grpc::ServerResponseUnarySink<super::poh::VerifyResponse>) -> ::grpc::Result<()>;
 }
@@ -42,9 +42,9 @@ impl ::grpc::ClientStub for PoHClient {
 }
 
 impl PoHClient {
-    pub fn verify_file_attached_signature(&self, o: ::grpc::RequestOptions, req: super::poh::VerifyAttachedSignatureRequest) -> ::grpc::SingleResponse<super::poh::VerifyResponse> {
+    pub fn verify_attached_signature(&self, o: ::grpc::RequestOptions, req: super::poh::VerifyAttachedSignatureRequest) -> ::grpc::SingleResponse<super::poh::VerifyResponse> {
         let descriptor = ::grpc::rt::ArcOrStatic::Static(&::grpc::rt::MethodDescriptor {
-            name: ::grpc::rt::StringOrStatic::Static("/poh.PoH/verify_file_attached_signature"),
+            name: ::grpc::rt::StringOrStatic::Static("/poh.PoH/verify_attached_signature"),
             streaming: ::grpc::rt::GrpcStreaming::Unary,
             req_marshaller: ::grpc::rt::ArcOrStatic::Static(&::grpc_protobuf::MarshallerProtobuf),
             resp_marshaller: ::grpc::rt::ArcOrStatic::Static(&::grpc_protobuf::MarshallerProtobuf),
@@ -75,14 +75,14 @@ impl PoHServer {
             vec![
                 ::grpc::rt::ServerMethod::new(
                     ::grpc::rt::ArcOrStatic::Static(&::grpc::rt::MethodDescriptor {
-                        name: ::grpc::rt::StringOrStatic::Static("/poh.PoH/verify_file_attached_signature"),
+                        name: ::grpc::rt::StringOrStatic::Static("/poh.PoH/verify_attached_signature"),
                         streaming: ::grpc::rt::GrpcStreaming::Unary,
                         req_marshaller: ::grpc::rt::ArcOrStatic::Static(&::grpc_protobuf::MarshallerProtobuf),
                         resp_marshaller: ::grpc::rt::ArcOrStatic::Static(&::grpc_protobuf::MarshallerProtobuf),
                     }),
                     {
                         let handler_copy = handler_arc.clone();
-                        ::grpc::rt::MethodHandlerUnary::new(move |ctx, req, resp| (*handler_copy).verify_file_attached_signature(ctx, req, resp))
+                        ::grpc::rt::MethodHandlerUnary::new(move |ctx, req, resp| (*handler_copy).verify_attached_signature(ctx, req, resp))
                     },
                 ),
                 ::grpc::rt::ServerMethod::new(

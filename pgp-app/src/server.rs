@@ -1,5 +1,5 @@
 /// Generates a key, then signs and verifies a message.
-use std::io::{self, Read, Write};
+use std::io::{self, Write};
 
 use crate::openpgp::cert::prelude::*;
 use crate::openpgp::parse::{stream::*, Parse};
@@ -8,103 +8,123 @@ use crate::openpgp::policy::StandardPolicy as P;
 use crate::openpgp::serialize::stream::*;
 use anyhow::*;
 use sequoia_openpgp as openpgp;
-use sequoia_openpgp::packet::key::*;
+
 use std::env;
-use std::env::args;
-use std::fs::File;
+
 use std::result::Result::Ok;
+
+// importing generated gRPC code
+use poh_grpc::*;
+// importing types for messages
+use poh::*;
+mod poh;
+mod poh_grpc;
+use grpc::{ServerHandlerContext, ServerRequestSingle, ServerResponseUnarySink};
+
+use std::cell::RefCell;
+use std::sync::{Arc, Mutex};
 
 const MESSAGE: &str = "дружба";
 
+struct MyPoH {
+    keyring: Arc<Mutex<Vec<Cert>>>,
+}
+
+impl MyPoH {
+    fn process_attached_signature(&self, signature: &str) -> Result<(), ()> {
+        let mut good = false;
+        let binding = self.keyring.lock().unwrap();
+        for cert in binding.iter() {
+            let p = &P::new();
+            let mut plaintext = Vec::new();
+            match verify(p, &mut plaintext, &signature.as_bytes(), &cert) {
+                Ok(()) => {
+                    good = true;
+                }
+                Err(_s) => {}
+            }
+        }
+        if good {
+            Ok(())
+        } else {
+            Err(())
+        }
+    }
+}
+
+impl PoH for MyPoH {
+    fn verify_attached_signature(
+        &self,
+        _: ServerHandlerContext,
+        req: ServerRequestSingle<VerifyAttachedSignatureRequest>,
+        resp: ServerResponseUnarySink<VerifyResponse>,
+    ) -> grpc::Result<()> {
+        let mut r = VerifyResponse::new();
+        if self
+            .process_attached_signature(&req.message.file_attached_signature)
+            .is_ok()
+        {
+            r.set_valid(true);
+            r.set_info("Valid signature".to_string());
+        } else {
+            r.set_valid(false);
+            r.set_info("Invalid signature".to_string());
+        }
+        resp.finish(r)
+    }
+    fn verify_detached_signature(
+        &self,
+        _: ServerHandlerContext,
+        _req: ServerRequestSingle<VerifyDetachedSignatureRequest>,
+        resp: ServerResponseUnarySink<VerifyResponse>,
+    ) -> grpc::Result<()> {
+        let mut r = VerifyResponse::new();
+        r.set_info("Not implemented yet".to_string());
+        r.set_valid(false);
+        resp.finish(r)
+    }
+}
+
 fn main() -> openpgp::Result<()> {
+    let mut port = 50051;
+
     let args: Vec<String> = env::args().collect();
     let mut key = None;
-    let mut option = None;
 
     if args.len() == 3 {
         key = Some(&args[1]);
-        option = Some(&args[2]);
-        println!("key: {}, option: {}", key.unwrap(), option.unwrap());
+        port = args[2].parse::<u16>().expect("invalid port number");
+        println!("key: {}, port: {}", key.unwrap(), port);
     } else {
-        return Err(anyhow!("usage: {} key-ring signature", args[0]));
+        return Err(anyhow!("usage: {} key-ring port", args[0]));
     }
 
     let key_raw = std::fs::read_to_string(key.unwrap()).expect("Unable to read file");
-    let certs = CertParser::from_bytes(&key_raw).expect("Failed to read keys");
-    let signature_raw = std::fs::read_to_string(option.unwrap()).expect("Unable to read file");
-
-    let mut good = false;
-    for cert in certs {
-        let p = &P::new();
-        let mut plaintext = Vec::new();
-        match verify(p, &mut plaintext, &signature_raw.as_bytes(), &cert.unwrap()) {
-            Ok(()) => {
-                good = true;
+    let key_static: &'static str = Box::leak(key_raw.into_boxed_str());
+    let mut cert_parse = CertParser::from_bytes(key_static).expect("Failed to read keys");
+    let mut certs = Vec::<Cert>::new();
+    while let Some(packet) = cert_parse.next() {
+        match packet {
+            Ok(cert) => {
+                certs.push(cert);
             }
-            Err(s) => {
-                println!("error: {:?}", s);
-            }
+            Err(_err) => {}
         }
     }
+    let mut server = grpc::ServerBuilder::new_plain();
 
-    if good {
-        println!("Valid signature!");
-    } else {
-        println!("Invalid signature");
+    server.http.set_port(port);
+
+    server.add_service(PoHServer::new_service_def(MyPoH {
+        keyring: Arc::new(Mutex::new(certs)),
+    }));
+    // running the server
+    let _server = server.build().expect("server");
+    println!("proof of human server started on port {}", port);
+    // stopping the program from finishing
+    loop {
+        std::thread::park();
     }
-    /*
-        let ppr = PacketParser::from_bytes(&keyring)?;
-        for certo in CertParser::from(ppr) {
-            match certo {
-                Ok(cert) => {
-                    println!("Key: {}", cert.fingerprint());
-                    for ua in cert.userids() {
-                        println!("  User ID: {}", ua.userid());
-                    }
-                }
-                Err(err) => {
-                    eprintln!("Error reading keyring: {}", err);
-                }
-            }
-        }
-    */
-
-    /*    let args: Vec<String> = env::args().collect();
-        let mut key = None;
-        let mut option = None;
-
-        if args.len() == 3 {
-            key = Some(&args[1]);
-            option = Some(&args[2]);
-            println!("key: {}, option: {}", key.unwrap(), option.unwrap());
-        } else {
-            return Err(anyhow!("usage: {} key option", args[0]));
-        }
-
-        let p = &P::new();
-        // read from file key, store as a Vec<u8>
-        let mut key_file = File::open(key.unwrap()).expect("Unable to open key file");
-        let mut key_vec = Vec::new();
-        key_file.read_to_end(&mut key_vec).expect("Unable to read key file");
-
-        // Generate a key.
-        let key: sequoia_openpgp::packet::prelude::Key4<PublicParts, PrimaryRole> = Key4::import_public_ed25519(&key_vec[..], None).unwrap();
-
-        // print fingerprint
-        println!("key fingerprint: {}", key.fingerprint());
-    */
-    /*
-        // Sign the message.
-        let mut signed_message = Vec::new();
-        sign(p, &mut signed_message, MESSAGE, &key)?;
-
-        // Verify the message.
-        let mut plaintext = Vec::new();
-        verify(p, &mut plaintext, &signed_message, &key)?;
-
-        assert_eq!(MESSAGE.as_bytes(), &plaintext[..]);
-    */
-    Ok(())
 }
 
 /// Generates an signing-capable key.
