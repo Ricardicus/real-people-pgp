@@ -1,13 +1,19 @@
-# Proof of human
+# only Real People PGP
 
 Building some of the building blocks for an attempt to solve the problem of chatbot overflow
 caused by platform incentive structures, ai and human behaviour.
 
+# Background
+
+It is likely that the public internet will increasingly be driven my LLMs.
+Verifying who is human is no easy task, but there are solutions that 
+might be more social than technical. In this project, humans that use open PGP
+are encouraged to verify themselves in the real world; where bots (yet) aren't
+present. 
+
 # Building blocks
 
-I am building a library, a client and a server that uses ECC cryptography to establish a 
-chain of trust among humans who want to be able to exclude bots from commenting
-or posting on a public forum.
+I am building 
 
 # A work in progress
 
