@@ -1,3 +1,6 @@
+This project has been moved to here: <a href="https://github.com/real-people-pgp/real-people-pgp.git">real-people-pgp.git</a>.
+
+
 # Only Real People PGP
 
 Creating a secure and trustable foundation for communication in a world increasingly dominated by chatbots and AI, by leveraging OpenPGP and real-world human connections.
