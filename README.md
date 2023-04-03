@@ -1,19 +1,18 @@
-# only Real People PGP
+# Only Real People PGP
 
-Building some of the building blocks for an attempt to solve the problem of chatbot overflow
-caused by platform incentive structures, ai and human behaviour.
+Creating a secure and trustable foundation for communication in a world increasingly dominated by chatbots and AI, by leveraging OpenPGP and real-world human connections.
 
-# Background
+## Introduction
 
-It is likely that the public internet will increasingly be driven my LLMs.
-Verifying who is human is no easy task, but there are solutions that 
-might be more social than technical. In this project, humans that use open PGP
-are encouraged to verify themselves in the real world; where bots (yet) aren't
-present. 
+The public internet is becoming more and more influenced by large language models (LLMs) and AI-driven chatbots. As these technologies advance, distinguishing between human and non-human users becomes increasingly challenging. In response to this growing concern, the Only Real People PGP project aims to create a network of verified human users who have met and established trust in person.
 
-# Building blocks
+## Background
 
-I am building 
+While technical solutions to verify human users are essential, sometimes the best approach is a combination of technology and social interaction. OpenPGP, a widely-used encryption standard, serves as the foundation of this project. By encouraging human users to meet and verify each other in the real world, we can create a more trustworthy network, ensuring that the person on the other end of the conversation is indeed human.
+
+## Get Involved
+
+We welcome contributions, ideas, and feedback to help us build a safer and more secure internet for everyone. Join us in our mission to create a network of verified human users and safeguard online communication against the growing presence of AI and chatbots.
 
 # A work in progress
 
