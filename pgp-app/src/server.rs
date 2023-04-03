@@ -112,7 +112,6 @@ fn main() -> openpgp::Result<()> {
         }
     }
     let mut server = grpc::ServerBuilder::new_plain();
-
     server.http.set_port(port);
 
     server.add_service(PoHServer::new_service_def(MyPoH {
